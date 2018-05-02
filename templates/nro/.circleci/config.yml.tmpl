@@ -1,0 +1,114 @@
+defaults: &defaults
+  environment:
+    GOOGLE_PROJECT_ID: planet-4-151612
+    INFRA_VERSION: {{ .Env.INFRA_VERSION }}
+    CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+    APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
+  docker:
+    - image: gcr.io/planet-4-151612/p4-builder:{{ .Env.INFRA_VERSION }}
+  working_directory:  /home/circleci/
+
+version: 2
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - setup_remote_docker
+
+      - run:
+          name: Configure
+          command: |
+            ${HOME}/scripts/activate-gcloud-account.sh
+            mkdir -p /tmp/workspace/var
+            echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
+
+      - run:
+          name: Build
+          working_directory: /home/circleci
+          command: |
+            make
+
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - var
+
+  # test:
+  #   <<: *defaults
+  #   steps:
+  #     - run:
+  #         name: Placeholder
+  #         command: |
+  #           echo "Branch: ${CIRCLE_BRANCH}"
+  #           echo "Build:  ${CIRCLE_BUILD_NUM}"
+  #           echo "Tag:    ${CIRCLE_TAG}"
+  #           echo "No tests implemented yet"
+
+  deploy-develop:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run:
+          name: Configure
+          command: |
+            ${HOME}/scripts/activate-gcloud-account.sh
+
+      - run:
+          name: Deploy new containers
+          environment:
+            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Develop
+          command: |
+            export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
+            make deploy
+
+
+workflows:
+  version: 2
+  branch:
+    jobs:
+      - build:
+          context: org-global
+          filters:
+            tags:
+              ignore: /^v.*/
+
+      - deploy-develop:
+          context: org-global
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+
+  tag:
+    jobs:
+      - build:
+          context: org-global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+
+      - hold-production:
+          type: approval
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          requires:
+            - build
+
+      - deploy-production:
+          context: org-global
+          requires:
+            - hold-production
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
