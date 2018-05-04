@@ -1,1 +1,13 @@
 src/
+
+\.DS_Store
+
+\.idea/inspectionProfiles/Project_Default\.xml
+
+\.idea/modules\.xml
+
+\.idea/planet4-nro-generator\.iml
+
+\.idea/vcs\.xml
+
+\.idea/workspace\.xml
