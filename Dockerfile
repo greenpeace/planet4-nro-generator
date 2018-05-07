@@ -1,14 +1,19 @@
 FROM gcr.io/planet-4-151612/ubuntu:latest
 
-RUN apt-get update && \
+RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    apt-get update && \
     apt-get install -y -q --no-install-recommends \
      git-core \
+     google-cloud-sdk \
      jq \
      make \
+     mysql-client \
      rsync \
      && \
-    apt-get clean && \
     rm -r /var/lib/apt/lists/* && \
+    wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /app/bin/cloud_sql_proxy && \
+    chmod 755 /app/bin/cloud_sql_proxy && \
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
 WORKDIR /app
@@ -22,13 +27,23 @@ ENTRYPOINT ["make"]
 CMD ["all"]
 
 ENV \
-  APP_HOSTPATH="" \
-  CIRCLE_PROJECT_REPONAME="planet4-base-test" \
-  CIRCLE_PROJECT_USERNAME="greenpeace" \
-  CIRCLE_TOKEN="" \
-  CONTAINER_PREFIX="planet4-base-test" \
-  GITHUB_OUTH_TOKEN="" \
-  INFRA_VERSION="v0.7.2" \
-  NEWRELIC_APPNAME="P4 Change My Name" \
-  SQLPROXY_KEY="" \
-  WP_STATELESS_KEY=""
+    APP_HOSTPATH="" \
+    CIRCLE_PROJECT_REPONAME="planet4-base-test" \
+    CIRCLE_PROJECT_USERNAME="greenpeace" \
+    CIRCLE_TOKEN="" \
+    CLOUDSQL_INSTANCE="planet-4-151612:us-central1:p4-develop-k8s" \
+    CONTAINER_PREFIX="planet4-base-test" \
+    CONTENT_BUCKET="planet4-default-content" \
+    CONTENT_SQLDUMP="planet4_dev.sql" \
+    GCP_DEVELOPMENT_CLUSTER="planet-4-151612" \
+    GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
+    GCP_PRODUCTION_CLUSTER="planet4-production" \
+    GCP_PRODUCTION_PROJECT="planet4-production" \
+    GITHUB_OUTH_TOKEN="" \
+    GOOGLE_PROJECT_ID="planet-4-151612" \
+    INFRA_VERSION="v0.7.4" \
+    MYSQL_DATABASE="wordpress" \
+    MYSQL_PASSWORD="" \
+    MYSQL_ROOT_PASSWORD="" \
+    MYSQL_USERNAME="" \
+    NEWRELIC_APPNAME="P4 Change My Name" \

@@ -3,8 +3,8 @@ SHELL := /bin/bash
 ################################################################################
 # Ensure these files exist, or that the keys are in environment
 
-WP_STATELESS_KEY        := $(shell cat secrets/stateless-service-account.json | base64 -w 0 | xargs)
-SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | base64 -w 0 | xargs)
+WP_STATELESS_KEY        := $(shell cat secrets/stateless-service-account.json | base64 -w 0)
+SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | base64 -w 0)
 
 ###############################################################################
 
@@ -18,37 +18,43 @@ clean:
 
 ################################################################################
 
-init: init-repo init-project
+init: init-repo init-project init-db
 
 init-repo:
-	./init_github_repo.sh
+	init_github_repo.sh
 
 init-project:
-	./init_circle_project.sh
+	init_circle_project.sh
 
-###############################################################################
+init-db:
+	init_db.sh
+
+################################################################################
 
 env: env-stateless env-sqlproxy env-wp
 
 env-stateless:
-	./add_environment_variable.sh WP_STATELESS_KEY $(WP_STATELESS_KEY)
+	add_environment_variable.sh WP_STATELESS_KEY "$(WP_STATELESS_KEY)"
 
 env-sqlproxy:
-	./add_environment_variable.sh SQLPROXY_KEY $(WP_STATELESS_KEY)
+	add_environment_variable.sh SQLPROXY_KEY "$(SQLPROXY_KEY)"
 
 env-wp:
-	./generate_wp_keys.sh
+	init_wp_environment.sh
 
 ################################################################################
 
-delete-yes-i-mean-it: delete-repo-yes-i-mean-it delete-project-yes-i-mean-it
+delete-yes-i-mean-it: delete-repo-yes-i-mean-it delete-project-yes-i-mean-it delete-db-yes-i-mean-it
 
 delete-repo-yes-i-mean-it:
-	./delete_github_repo.sh
+	delete_github_repo.sh
 
 delete-project-yes-i-mean-it:
+
+delete-db-yes-i-mean-it:
+	delete_db.sh
 
 ################################################################################
 
 deploy:
-	./trigger_build.sh
+	trigger_build.sh

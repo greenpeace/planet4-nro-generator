@@ -17,7 +17,7 @@ json=$(jq -n --arg name "${CIRCLE_PROJECT_REPONAME}" '{ name: $name }')
 
 echo "$json"
 
-response="$(curl -s -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME:-greenpeace}/repos")"
+response="$(curl -s -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME}/repos")"
 
 jq -M -n -r "$response | ."
 
