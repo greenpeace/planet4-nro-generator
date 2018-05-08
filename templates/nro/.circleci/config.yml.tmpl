@@ -27,7 +27,13 @@ jobs:
           name: Build
           working_directory: /home/circleci
           command: |
-            make
+            if make
+            then
+              TYPE="Build" ${HOME}/scripts/notify-job-success.sh
+            else
+              TYPE="Build" ${HOME}/scripts/notify-job-failure.sh
+              exit 1
+            fi
 
       - persist_to_workspace:
           root: /tmp/workspace
@@ -92,7 +98,13 @@ jobs:
           name: Build
           working_directory: /home/circleci
           command: |
-            make
+            if make
+            then
+              TYPE="Build" ${HOME}/scripts/notify-job-success.sh
+            else
+              TYPE="Build" ${HOME}/scripts/notify-job-failure.sh
+              exit 1
+            fi
 
       - persist_to_workspace:
           root: /tmp/workspace
@@ -160,7 +172,13 @@ jobs:
           name: Build
           working_directory: /home/circleci
           command: |
-            make
+            if make
+            then
+              TYPE="Build" ${HOME}/scripts/notify-job-success.sh
+            else
+              TYPE="Build" ${HOME}/scripts/notify-job-failure.sh
+              exit 1
+            fi
 
       - persist_to_workspace:
           root: /tmp/workspace
