@@ -1,5 +1,7 @@
 SHELL := /bin/bash
 
+CONTINUE_ON_FAIL := true
+
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
   # use the rest as arguments for "run"
@@ -32,7 +34,7 @@ init: init-repo init-project init-db
 
 .PHONY: init-repo
 init-repo:
-	init_github_repo.sh
+	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) init_github_repo.sh
 
 .PHONY: init-project
 init-project:

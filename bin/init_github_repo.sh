@@ -23,7 +23,11 @@ jq -M -n -r "$response | ."
 
 clone_url=$(jq -M -n -r "$response | .ssh_url")
 
-[[ $clone_url = "null" ]] && >&2 jq -C -n "$response | ." && >&2 echo "Error creating repository" && exit 1
+if [[ $clone_url = "null" ]] && >&2 jq -C -n "$response | ."
+then
+  >&2 echo "Error creating repository"
+  [[ ${CONTINUE_ON_FAIL} = "false" ]] && exit 1 || exit 0
+fi
 
 git config --global -l
 
