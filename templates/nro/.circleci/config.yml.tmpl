@@ -9,10 +9,13 @@ jobs:
   build-develop:
     <<: *defaults
     environment:
+      APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+      CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
-      INFRA_VERSION: {{ .Env.INFRA_VERSION }}
+      HELM_NAMESPACE: develop
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     steps:
       - setup_remote_docker
 
@@ -54,10 +57,13 @@ jobs:
   deploy-develop:
     <<: *defaults
     environment:
+      APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+      CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
-      INFRA_VERSION: {{ .Env.INFRA_VERSION }}
+      HELM_NAMESPACE: develop
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -78,12 +84,15 @@ jobs:
   build-release:
     <<: *defaults
     environment:
+      APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER}}
-      INFRA_VERSION: {{ .Env.INFRA_VERSION }}
-      HELM_NAMESPACE: release
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
+      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
     steps:
       - setup_remote_docker
 
@@ -125,12 +134,15 @@ jobs:
   deploy-release:
     <<: *defaults
     environment:
+      APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER}}
-      INFRA_VERSION: {{ .Env.INFRA_VERSION }}
-      HELM_NAMESPACE: release
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
+      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -152,12 +164,15 @@ jobs:
   build-tag:
     <<: *defaults
     environment:
+      APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER}}
-      INFRA_VERSION: {{ .Env.INFRA_VERSION }}
-      HELM_NAMESPACE: master
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
     steps:
       - setup_remote_docker
 
@@ -199,12 +214,15 @@ jobs:
   deploy-tag:
     <<: *defaults
     environment:
+      APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER}}
-      INFRA_VERSION: {{ .Env.INFRA_VERSION }}
-      HELM_NAMESPACE: master
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
     steps:
       - attach_workspace:
           at: /tmp/workspace
