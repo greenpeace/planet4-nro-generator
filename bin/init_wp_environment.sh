@@ -3,8 +3,6 @@ set -e
 
 [[ -f secrets/env ]] && source secrets/env
 
-
-
 add_environment_variable.sh WP_DB_USERNAME "$(echo "${MYSQL_USERNAME}" | base64 -w 0)" &
 add_environment_variable.sh WP_DB_PASSWORD "$(echo "${MYSQL_PASSWORD}" | base64 -w 0)" &
 add_environment_variable.sh WP_DB_DATABASE "$(echo "${MYSQL_USERNAME}_${MYSQL_DATABASE}" | base64 -w 0)" &

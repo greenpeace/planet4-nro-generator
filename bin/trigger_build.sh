@@ -32,4 +32,6 @@ git push --set-upstream origin develop
 
 popd
 
+echo ""
 echo "Deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+echo ""

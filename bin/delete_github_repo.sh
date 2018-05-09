@@ -3,8 +3,16 @@ set -eu
 
 [[ -f secrets/env ]] && source secrets/env
 
+
+
 echo ""
-echo "YOU ARE ABOUT TO DELETE https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo ""
+echo "WARNING: YOU ARE ABOUT TO DELETE A GITHUB REPOSITORY"
+echo ""
+echo "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+echo ""
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo ""
 
 read -p "Are you sure? [y/N] " yn

@@ -7,8 +7,6 @@ set -eu
 key=${1}
 value=${2}
 
-echo "User:    ${CIRCLE_PROJECT_USERNAME:-greenpeace}"
-echo "Project: ${CIRCLE_PROJECT_REPONAME}"
 echo "Key:     ${key}"
 
 json=$(jq -n --arg key "$key" --arg value "$value" '{ name: $key, value: $value }')

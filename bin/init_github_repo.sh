@@ -15,11 +15,12 @@ ssh-add ${HOME}/.ssh/id_rsa
 # shellcheck disable=2016
 json=$(jq -n --arg name "${CIRCLE_PROJECT_REPONAME}" '{ name: $name }')
 
+echo ""
+echo "Generating github repository: github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+echo ""
 echo "$json"
-
+echo ""
 response="$(curl -s -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME}/repos")"
-
-jq -M -n -r "$response | ."
 
 clone_url=$(jq -M -n -r "$response | .ssh_url")
 
@@ -30,7 +31,9 @@ then
 fi
 
 git config --global -l
-
+echo ""
+echo "---------"
+echo ""
 echo "Cloning repository: $clone_url"
 
 git clone "$clone_url" src
@@ -38,28 +41,42 @@ git clone "$clone_url" src
 pushd src
 
 git checkout -b develop
-
+echo ""
+echo "---------"
+echo ""
 echo "Syncing template/nro/ into src/"
 rsync -a ../templates/nro/ .
-
+echo ""
+echo "---------"
+echo ""
 echo "Creating files from template ..."
 
-echo " - .circleci/config.yml"
-dockerize -template .circleci/config.yml.tmpl:.circleci/config.yml
+dockerize \
+  -template .circleci/config.yml.tmpl:.circleci/config.yml \
+  -template composer-local.json.tmpl:composer-local.json
 
-echo " - .circleci/composer-local.json"
-dockerize -template composer-local.json.tmpl:composer-local.json
-
+echo ""
+echo "---------"
+echo ""
 echo "Cleaning .tmpl files ..."
 find . -type f -name '*.tmpl' -delete
 
+echo ""
+echo "---------"
+echo ""
 echo "Staging files ..."
 git add .
 
-echo "Commit..."
+echo ""
+echo "---------"
+echo ""
+echo "Commit ..."
 git commit -m ":robot: init"
 
-echo "Pushing to $clone_url"
+echo ""
+echo "---------"
+echo ""
+echo "Pushing to $clone_url ..."
 git push --set-upstream origin develop
 
 git checkout -b master
