@@ -3,25 +3,19 @@ set -eu
 
 [[ -f secrets/env ]] && source secrets/env
 
-cloud_sql_proxy "-instances=${CLOUDSQL_INSTANCE}=tcp:3306" \
-                 -credential_file=secrets/cloudsql-service-account.json &
-
+# Authenticate with wp-stateless account to ensure we can pull from SQL bucket
 gcloud auth activate-service-account --key-file secrets/stateless-service-account.json
 
-gsutil cp "gs://${CONTENT_BUCKET}/${CONTENT_SQLDUMP}.gz" .
-gunzip -k -f "${CONTENT_SQLDUMP}.gz"
+gsutil cp "gs://${CONTENT_BUCKET}/${CONTENT_SQLDUMP}.gz" . && gunzip -k -f "${CONTENT_SQLDUMP}.gz"
 
-dockerize \
-  -template templates/create_user.sql.tmpl:./create_user.sql \
-  -wait tcp://127.0.0.1:3306 \
-  -timeout 30s
+################################################################################
 
-cat create_user.sql
+CLOUDSQL_ENV=develop MYSQL_ROOT_PASSWORD=${MYSQL_DEVELOPMENT_ROOT_PASSWORD} create_mysql_user_database.sh
 
-echo "Creating user '${MYSQL_USERNAME}' and database '${MYSQL_USERNAME}_${MYSQL_DATABASE}' ..."
-mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -h 127.0.0.1  < create_user.sql
+################################################################################
 
-echo "Importing database from: gs://${CONTENT_BUCKET}/${CONTENT_SQLDUMP}.gz ..."
-mysql -u "${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}" -h 127.0.0.1 "${MYSQL_USERNAME}_${MYSQL_DATABASE}" < "${CONTENT_SQLDUMP}"
+CLOUDSQL_ENV=release MYSQL_ROOT_PASSWORD=${MYSQL_PRODUCTION_ROOT_PASSWORD} create_mysql_user_database.sh
 
-kill $(jobs -p)
+################################################################################
+
+CLOUDSQL_ENV=master MYSQL_ROOT_PASSWORD=${MYSQL_PRODUCTION_ROOT_PASSWORD} create_mysql_user_database.sh
