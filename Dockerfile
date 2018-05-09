@@ -27,23 +27,30 @@ ENTRYPOINT ["make"]
 CMD ["all"]
 
 ENV \
+    APP_HOSTNAME="greenpeace.org" \
     APP_HOSTPATH="" \
     CIRCLE_PROJECT_REPONAME="planet4-base-test" \
     CIRCLE_PROJECT_USERNAME="greenpeace" \
     CIRCLE_TOKEN="" \
-    CLOUDSQL_INSTANCE="planet-4-151612:us-central1:p4-develop-k8s" \
     CONTAINER_PREFIX="planet4-base-test" \
     CONTENT_BUCKET="planet4-default-content" \
     CONTENT_SQLDUMP="planet4_dev.sql" \
+    GCP_DEVELOPMENT_CLOUDSQL="p4-develop-k8s" \
     GCP_DEVELOPMENT_CLUSTER="planet-4-151612" \
     GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
+    GCP_DEVELOPMENT_REGION="us-central1" \
+    GCP_PRODUCTION_CLOUDSQL="planet4-production" \
     GCP_PRODUCTION_CLUSTER="planet4-production" \
     GCP_PRODUCTION_PROJECT="planet4-production" \
+    GCP_PRODUCTION_REGION="us-central1" \
     GITHUB_OUTH_TOKEN="" \
     GOOGLE_PROJECT_ID="planet-4-151612" \
-    INFRA_VERSION="v0.7.4" \
+    INFRA_VERSION="v0.8.0" \
     MYSQL_DATABASE="wordpress" \
+    MYSQL_DEVELOPMENT_ROOT_USER="root" \
+    MYSQL_DEVELOPMENT_ROOT_PASSWORD="" \
     MYSQL_PASSWORD="" \
-    MYSQL_ROOT_PASSWORD="" \
+    MYSQL_PRODUCTION_ROOT_USER="root" \
+    MYSQL_PRODUCTION_ROOT_PASSWORD="" \
     MYSQL_USERNAME="" \
     NEWRELIC_APPNAME="P4 Change My Name" \
