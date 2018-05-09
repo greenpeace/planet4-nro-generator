@@ -15,8 +15,26 @@ secrets/env
 # Deploying a new NRO
 
 ```
+# Simple:
+make run
+
+# Full command:
+docker build -t p4-build .
 docker run --rm -ti \
-  -v "${PWD}/secrets:/app/secrets" \
-  -v "${HOME}/.ssh/id_rsa:/root/.ssh/id_rsa" \
-  gcr.io/planet-4-151612/p4-nro-generator
+  -v "$(PWD)/secrets:/app/secrets" \
+  -v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
+  p4-build
 ```
+
+## Deleting all associated resources
+
+Pass the Makefile target as a command parameter, eg:
+
+```
+docker run --rm -ti \
+  -v "$(PWD)/secrets:/app/secrets" \
+  -v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
+  p4-build delete-yes-i-mean-it
+```
+
+Look in the Makefile for more commands you can pass to the container.
