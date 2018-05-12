@@ -155,8 +155,7 @@ jobs:
       - run:
           name: Deploy new containers
           environment:
-            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
-            HELM_NAMESPACE: release
+            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
           command: |
             export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
             make deploy
@@ -236,7 +235,6 @@ jobs:
           name: Deploy new containers
           environment:
             NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }}
-            HELM_NAMESPACE: master
           command: |
             export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
             make deploy
