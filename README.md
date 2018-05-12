@@ -1,4 +1,4 @@
-#  Planet 4 NRO Generator
+# Planet 4 NRO Generator
 
 ## Requirements:
 
@@ -35,6 +35,9 @@ docker run --rm -ti \
   -v "$(PWD)/secrets:/app/secrets" \
   -v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
   p4-build delete-yes-i-mean-it
+
+# or via Make
+make run delete-yes-i-mean-it
 ```
 
 Look in the Makefile for more commands you can pass to the container.
