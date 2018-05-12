@@ -39,7 +39,7 @@ ENV \
     GCP_DEVELOPMENT_CLUSTER="planet-4-151612" \
     GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
     GCP_DEVELOPMENT_REGION="us-central1" \
-    GCP_PRODUCTION_CLOUDSQL="planet4-production" \
+    GCP_PRODUCTION_CLOUDSQL="planet4-prod" \
     GCP_PRODUCTION_CLUSTER="planet4-production" \
     GCP_PRODUCTION_PROJECT="planet4-production" \
     GCP_PRODUCTION_REGION="us-central1" \
