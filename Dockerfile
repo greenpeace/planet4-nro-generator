@@ -33,8 +33,8 @@ ENV \
     CIRCLE_PROJECT_USERNAME="greenpeace" \
     CIRCLE_TOKEN="" \
     CONTAINER_PREFIX="planet4-base-test" \
-    CONTENT_BUCKET="planet4-default-content" \
-    CONTENT_SQLDUMP="planet4_dev.sql" \
+    SOURCE_CONTENT_BUCKET="planet4-default-content" \
+    SOURCE_CONTENT_SQLDUMP="planet4-defaultcontent_wordpress-v0.1.0.sql" \
     GCP_DEVELOPMENT_CLOUDSQL="p4-develop-k8s" \
     GCP_DEVELOPMENT_CLUSTER="planet-4-151612" \
     GCP_DEVELOPMENT_PROJECT="planet-4-151612" \

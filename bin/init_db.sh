@@ -6,7 +6,7 @@ set -eu
 # Authenticate with wp-stateless account to ensure we can pull from SQL bucket
 gcloud auth activate-service-account --key-file secrets/stateless-service-account.json
 
-gsutil cp "gs://${CONTENT_BUCKET}/${CONTENT_SQLDUMP}.gz" . && gunzip -k -f "${CONTENT_SQLDUMP}.gz"
+gsutil cp "gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz" . && gunzip -k -f "${SOURCE_CONTENT_SQLDUMP}.gz"
 
 ################################################################################
 

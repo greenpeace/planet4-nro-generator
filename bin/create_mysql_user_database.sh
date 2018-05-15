@@ -52,11 +52,11 @@ mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf"  < "create_${CLOUDSQL_EN
 
 echo "---------"
 echo ""
-echo "SQL      gs://${CONTENT_BUCKET}/${CONTENT_SQLDUMP}.gz"
+echo "SQL      gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz"
 echo ""
-head "${CONTENT_SQLDUMP}"
+head -n 5 "${SOURCE_CONTENT_SQLDUMP}"
 echo ""
-mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" "${db}" < "${CONTENT_SQLDUMP}"
+mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" "${db}" < "${SOURCE_CONTENT_SQLDUMP}"
 echo "---------"
 echo ""
 # Stop background jobs
