@@ -55,3 +55,4 @@ ENV \
     MYSQL_USERNAME="" \
     NEWRELIC_APPNAME="P4 Change My Name" \
     TRIGGER_RELEASE_BUILD="true" \
+    WP_TITLE="Greenpeace" \
