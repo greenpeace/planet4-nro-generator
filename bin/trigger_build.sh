@@ -3,6 +3,9 @@ set -eu
 
 [[ -f secrets/env ]] && source secrets/env
 
+eval "$(ssh-agent)"
+ssh-add "${HOME}/.ssh/id_rsa"
+
 git config --global user.email "${GITHUB_USER_EMAIL}"
 git config --global user.name "${GITHUB_USER_NAME}"
 git config push.default simple
@@ -29,17 +32,25 @@ git commit -m ":robot: Add license"
 
 git push --set-upstream origin develop
 
-popd
+git remote show origin
 
 echo ""
 echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 echo ""
 
-[[ "${TRIGGER_RELEASE_BUILD}" = "false" ]] && exit 0
+if [[ "${TRIGGER_RELEASE_BUILD,,}" != "true" ]]
+then
+  popd
+  exit 0
+fi
 
 git checkout -b release/v0.0.1
 
 git push --set-upstream origin release/v0.0.1
+
+git remote show origin
+
+popd
 
 echo ""
 echo "Release deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/release%2Fv0.0.1"
