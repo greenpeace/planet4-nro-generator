@@ -11,8 +11,8 @@ jobs:
     environment:
       APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
+      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
       HELM_NAMESPACE: develop
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
@@ -59,8 +59,8 @@ jobs:
     environment:
       APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
+      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
       HELM_NAMESPACE: develop
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
@@ -86,13 +86,13 @@ jobs:
     environment:
       APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
     steps:
       - setup_remote_docker
 
@@ -136,13 +136,13 @@ jobs:
     environment:
       APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -165,13 +165,14 @@ jobs:
     environment:
       APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}
     steps:
       - setup_remote_docker
 
@@ -215,13 +216,14 @@ jobs:
     environment:
       APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}
     steps:
       - attach_workspace:
           at: /tmp/workspace
