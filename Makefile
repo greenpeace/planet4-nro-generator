@@ -4,10 +4,10 @@ CONTINUE_ON_FAIL := true
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "run"
-  RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # ...and turn them into do-nothing targets
-  $(eval $(RUN_ARGS):;@:)
+	# use the rest as arguments for "run"
+	RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+	# ...and turn them into do-nothing targets
+	$(eval $(RUN_ARGS):;@:)
 endif
 
 ################################################################################
@@ -87,6 +87,6 @@ run:
 	docker build -t p4-build .
 	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) \
 	docker run --rm -ti \
-	  -v "$(PWD)/secrets:/app/secrets" \
-	  -v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
-	  p4-build $(RUN_ARGS)
+		-v "$(PWD)/secrets:/app/secrets" \
+		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
+		p4-build $(RUN_ARGS)
