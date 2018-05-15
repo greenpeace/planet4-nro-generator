@@ -80,8 +80,7 @@ jobs:
           environment:
             NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
           command: |
-            export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
-            make deploy
+            BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make deploy
 
   build-release:
     <<: *defaults
@@ -161,7 +160,6 @@ jobs:
           environment:
             NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
           command: |
-            export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
             make deploy
 
   build-tag:
@@ -244,7 +242,6 @@ jobs:
           environment:
             NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }}
           command: |
-            export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
             make deploy
 
 workflows:
