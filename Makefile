@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-CONTINUE_ON_FAIL := true
+CONTINUE_ON_FAIL ?= false
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
