@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+.ONESHELL:
 
 CONTINUE_ON_FAIL ?= false
 
@@ -30,7 +31,7 @@ clean:
 ################################################################################
 
 .PHONY: init
-init: init-repo init-project init-db
+init: init-repo init-project init-db init-bucket
 
 .PHONY: init-repo
 init-repo:
@@ -43,6 +44,10 @@ init-project:
 .PHONY: init-db
 init-db:
 	init_db.sh
+
+.PHONY: init-bucket
+init-bucket:
+	init_bucket.sh
 
 ################################################################################
 .PHONY: env
@@ -63,7 +68,7 @@ env-wp:
 ################################################################################
 
 .PHONY: delete-yes-i-mean-it
-delete-yes-i-mean-it: delete-repo-yes-i-mean-it delete-project-yes-i-mean-it delete-db-yes-i-mean-it
+delete-yes-i-mean-it: delete-repo-yes-i-mean-it delete-project-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it
 
 .PHONY: delete-repo-yes-i-mean-it
 delete-repo-yes-i-mean-it:
@@ -75,6 +80,10 @@ delete-project-yes-i-mean-it:
 .PHONY: delete-db-yes-i-mean-it
 delete-db-yes-i-mean-it:
 	delete_db.sh
+
+.PHONY: delete-bucket-yes-i-mean-it
+delete-bucket-yes-i-mean-it:
+	delete_bucket.sh
 
 ################################################################################
 
