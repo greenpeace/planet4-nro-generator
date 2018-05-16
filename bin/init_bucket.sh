@@ -14,12 +14,18 @@ create_stateless_bucket.sh
 
 ##############################################################################
 
-BUCKET=${CONTAINER_PREFIX}-stateless-release \
-PROJECT=${GCP_PRODUCTION_PROJECT} \
-create_stateless_bucket.sh
+if [[ ${MAKE_RELEASE,,} = "true" ]]
+then
+  BUCKET=${CONTAINER_PREFIX}-stateless-release \
+  PROJECT=${GCP_PRODUCTION_PROJECT} \
+  create_stateless_bucket.sh
+fi
 
 ##############################################################################
 
-BUCKET=${CONTAINER_PREFIX}-stateless \
-PROJECT=${GCP_PRODUCTION_PROJECT} \
-create_stateless_bucket.sh
+if [[ ${MAKE_MASTER,,} = "true" ]]
+then
+  BUCKET=${CONTAINER_PREFIX}-stateless \
+  PROJECT=${GCP_PRODUCTION_PROJECT} \
+  create_stateless_bucket.sh
+fi

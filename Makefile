@@ -3,6 +3,10 @@ SHELL := /bin/bash
 
 CONTINUE_ON_FAIL ?= false
 
+MAKE_RELEASE ?= true
+
+MAKE_MASTER ?= true
+
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
 # use the rest as arguments for "run"
@@ -22,11 +26,11 @@ SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | b
 DEFAULT_GOAL: all
 
 .PHONY: all
-all: clean init env deploy
+all: env init env deploy
 
-.PHONY: clean
-clean:
-	rm -fr src
+.PHONY: env
+env:
+	env | sort
 
 ################################################################################
 
@@ -43,10 +47,14 @@ init-project:
 
 .PHONY: init-db
 init-db:
+	MAKE_RELASE=$(MAKE_RELEASE) \
+	MAKE_MASTER=$(MAKE_MASTER) \
 	init_db.sh
 
 .PHONY: init-bucket
 init-bucket:
+	MAKE_RELASE=$(MAKE_RELEASE) \
+	MAKE_MASTER=$(MAKE_MASTER) \
 	init_bucket.sh
 
 ################################################################################
@@ -96,6 +104,9 @@ run:
 	docker build -t p4-build .
 	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) \
 	docker run --rm -ti \
-		-v "$(PWD)/secrets:/app/secrets" \
+		-e "CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL)" \
+		-e "MAKE_MASTER=$(MAKE_MASTER)" \
+		-e "MAKE_RELEASE=$(MAKE_RELEASE)" \
 		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
+		-v "$(PWD)/secrets:/app/secrets" \
 		p4-build $(RUN_ARGS)

@@ -38,7 +38,7 @@ echo ""
 echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 echo ""
 
-if [[ "${TRIGGER_RELEASE_BUILD,,}" != "true" ]]
+if [[ "${MAKE_RELEASE,,}" != "true" ]]
 then
   popd
   exit 0
