@@ -46,7 +46,7 @@ ENV \
     GCP_PRODUCTION_REGION="us-central1" \
     GITHUB_OUTH_TOKEN="" \
     GOOGLE_PROJECT_ID="planet-4-151612" \
-    INFRA_VERSION="v0.8.3" \
+    INFRA_VERSION="v0.9.1" \
     MAKE_RELEASE="true" \
     MAKE_MASTER="true" \
     MYSQL_DATABASE="wordpress" \
