@@ -15,6 +15,7 @@ jobs:
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
       HELM_NAMESPACE: develop
+      TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
       WP_TITLE: {{ .Env.WP_TITLE }} Development
     steps:
@@ -33,9 +34,9 @@ jobs:
           command: |
             if make
             then
-              TYPE="Build" ${HOME}/scripts/notify-job-success.sh
+              ${HOME}/scripts/notify-job-success.sh
             else
-              TYPE="Build" ${HOME}/scripts/notify-job-failure.sh
+              ${HOME}/scripts/notify-job-failure.sh
               exit 1
             fi
 
@@ -93,6 +94,7 @@ jobs:
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
+      TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
       WP_TITLE: {{ .Env.WP_TITLE }} Release Candidate
     steps:
@@ -111,9 +113,9 @@ jobs:
           command: |
             if make
             then
-              TYPE="Build" ${HOME}/scripts/notify-job-success.sh
+              ${HOME}/scripts/notify-job-success.sh
             else
-              TYPE="Build" ${HOME}/scripts/notify-job-failure.sh
+              ${HOME}/scripts/notify-job-failure.sh
               exit 1
             fi
 
@@ -173,6 +175,7 @@ jobs:
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+      TYPE: "Tagged Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}
       WP_TITLE: {{ .Env.WP_TITLE }}
@@ -192,9 +195,9 @@ jobs:
           command: |
             if make
             then
-              TYPE="Build" ${HOME}/scripts/notify-job-success.sh
+              ${HOME}/scripts/notify-job-success.sh
             else
-              TYPE="Build" ${HOME}/scripts/notify-job-failure.sh
+              ${HOME}/scripts/notify-job-failure.sh
               exit 1
             fi
 
