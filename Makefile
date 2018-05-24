@@ -42,7 +42,7 @@ init: init-repo init-project init-db init-bucket
 
 .PHONY: init-repo
 init-repo:
-	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) init_github_repo.sh
+	init_github_repo.sh
 
 .PHONY: init-project
 init-project:
@@ -50,14 +50,10 @@ init-project:
 
 .PHONY: init-db
 init-db:
-	MAKE_RELASE=$(MAKE_RELEASE) \
-	MAKE_MASTER=$(MAKE_MASTER) \
 	init_db.sh
 
 .PHONY: init-bucket
 init-bucket:
-	MAKE_RELASE=$(MAKE_RELEASE) \
-	MAKE_MASTER=$(MAKE_MASTER) \
 	init_bucket.sh
 
 ################################################################################
@@ -107,9 +103,8 @@ run:
 	docker build -t p4-build .
 	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) \
 	docker run --rm -ti \
+		--name p4-nro-generator \
 		-e "CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL)" \
-		-e "MAKE_MASTER=$(MAKE_MASTER)" \
-		-e "MAKE_RELEASE=$(MAKE_RELEASE)" \
 		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
 		p4-build $(RUN_ARGS)
