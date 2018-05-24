@@ -44,7 +44,7 @@ ENV \
     GCP_PRODUCTION_CLUSTER="planet4-production" \
     GCP_PRODUCTION_PROJECT="planet4-production" \
     GCP_PRODUCTION_REGION="us-central1" \
-    GITHUB_OUTH_TOKEN="" \
+    GITHUB_OAUTH_TOKEN="" \
     GOOGLE_PROJECT_ID="planet-4-151612" \
     INFRA_VERSION="latest" \
     MAKE_RELEASE="true" \
