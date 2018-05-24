@@ -1,11 +1,10 @@
 SHELL := /bin/bash
 .ONESHELL:
 
+include secrets/env
+export $(shell sed 's/=.*//' secrets/env)
+
 CONTINUE_ON_FAIL ?= false
-
-MAKE_RELEASE ?= true
-
-MAKE_MASTER ?= true
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
