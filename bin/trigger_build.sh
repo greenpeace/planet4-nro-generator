@@ -24,7 +24,7 @@ export YEAR
 dockerize \
   -template "templates/LICENSE.tmpl:${CIRCLE_PROJECT_REPONAME}/LICENSE"
 
-pushd "${CIRCLE_PROJECT_REPONAME}"
+pushd "${CIRCLE_PROJECT_REPONAME}"  > /dev/null
 
 git add .
 
@@ -40,7 +40,7 @@ echo ""
 
 if [[ "${MAKE_RELEASE,,}" != "true" ]]
 then
-  popd
+  popd  > /dev/null
   exit 0
 fi
 
@@ -50,7 +50,7 @@ git push --set-upstream origin release/v0.0.1
 
 git remote show origin
 
-popd
+popd > /dev/null
 
 echo ""
 echo "Release deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/release%2Fv0.0.1"
