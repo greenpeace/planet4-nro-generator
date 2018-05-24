@@ -8,7 +8,7 @@ git config --global user.name "${GITHUB_USER_NAME}"
 git config push.default simple
 
 eval "$(ssh-agent)"
-ssh-add ${HOME}/.ssh/id_rsa
+ssh-add "${HOME}/.ssh/id_rsa"
 
 [[ -z "${APP_HOSTPATH:-}" ]] && >&2 echo -e "Error: APP_HOSTPATH is not set.\nUsage: APP_HOSTPATH=international make" && exit 1
 
