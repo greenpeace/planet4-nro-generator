@@ -25,11 +25,15 @@ SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | b
 DEFAULT_GOAL: all
 
 .PHONY: all
-all: env init env deploy
+all: test prompt init env deploy
 
-.PHONY: env
-env:
+.PHONY: test
+test:
 	env | sort
+
+.PHONY: prompt
+prompt:
+	@prompt.sh
 
 ################################################################################
 
