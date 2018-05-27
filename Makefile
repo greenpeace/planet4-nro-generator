@@ -17,8 +17,8 @@ endif
 ################################################################################
 # Ensure these files exist, or that the keys are in environment
 
-WP_STATELESS_KEY        := $(shell cat secrets/stateless-service-account.json | base64 -w 0)
-SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | base64 -w 0)
+WP_STATELESS_KEY        := $(shell cat secrets/stateless-service-account.json | openssl base64 -A)
+SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | openssl base64 -A)
 
 ###############################################################################
 
