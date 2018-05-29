@@ -17,6 +17,7 @@ jobs:
       HELM_NAMESPACE: develop
       TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
       WP_TITLE: {{ .Env.WP_TITLE }} Development
     steps:
       - setup_remote_docker
@@ -66,6 +67,7 @@ jobs:
       GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
       HELM_NAMESPACE: develop
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
       WP_TITLE: {{ .Env.WP_TITLE }} Development
     steps:
       - attach_workspace:
@@ -96,6 +98,7 @@ jobs:
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
       TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
       WP_TITLE: {{ .Env.WP_TITLE }} Release Candidate
     steps:
       - setup_remote_docker
@@ -147,6 +150,7 @@ jobs:
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
       WP_TITLE: {{ .Env.WP_TITLE }} Release Candidate
     steps:
       - attach_workspace:
@@ -177,7 +181,7 @@ jobs:
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
       TYPE: "Tagged Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
       WP_TITLE: {{ .Env.WP_TITLE }}
     steps:
       - setup_remote_docker
@@ -229,7 +233,7 @@ jobs:
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}
+      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
       WP_TITLE: {{ .Env.WP_TITLE }}
     steps:
       - attach_workspace:
