@@ -166,7 +166,7 @@ jobs:
           environment:
             NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
           command: |
-            make deploy
+            BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make deploy
 
   build-tag:
     <<: *defaults
