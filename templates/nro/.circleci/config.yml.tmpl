@@ -149,7 +149,7 @@ jobs:
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
+      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
       WP_TITLE: {{ .Env.WP_TITLE }} Release Candidate
     steps:
