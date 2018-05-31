@@ -34,8 +34,6 @@ ENV \
     CIRCLE_TOKEN="" \
     CONTAINER_PREFIX="planet4-base-test" \
     CONTINUE_ON_FAIL="false" \
-    SOURCE_CONTENT_BUCKET="planet4-default-content" \
-    SOURCE_CONTENT_SQLDUMP="planet4-defaultcontent_wordpress-v0.1.1.sql" \
     GCP_DEVELOPMENT_CLOUDSQL="p4-develop-k8s" \
     GCP_DEVELOPMENT_CLUSTER="planet-4-151612" \
     GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
@@ -47,8 +45,9 @@ ENV \
     GITHUB_OAUTH_TOKEN="" \
     GOOGLE_PROJECT_ID="planet-4-151612" \
     INFRA_VERSION="latest" \
-    MAKE_RELEASE="true" \
     MAKE_MASTER="true" \
+    MAKE_RELEASE="true" \
+    MAKE_RELEASE="true" \
     MYSQL_DATABASE="wordpress" \
     MYSQL_DEVELOPMENT_ROOT_PASSWORD="" \
     MYSQL_DEVELOPMENT_ROOT_USER="root" \
@@ -57,5 +56,7 @@ ENV \
     MYSQL_PRODUCTION_ROOT_USER="root" \
     MYSQL_USERNAME="" \
     NEWRELIC_APPNAME="P4 Change My Name" \
-    MAKE_RELEASE="true" \
+    SOURCE_CONTENT_BUCKET="planet4-default-content" \
+    SOURCE_CONTENT_SQLDUMP="planet4-defaultcontent_wordpress-v0.1.1.sql" \
+    STATELESS_BUCKET_REGION="us" \
     WP_TITLE="Greenpeace" \
