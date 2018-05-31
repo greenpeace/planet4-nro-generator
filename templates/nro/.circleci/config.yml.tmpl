@@ -247,7 +247,7 @@ jobs:
       - run:
           name: Deploy new containers
           environment:
-            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }}
+            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
           command: |
             make deploy
 
