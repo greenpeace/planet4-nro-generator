@@ -9,6 +9,7 @@ jobs:
   build-develop:
     <<: *defaults
     environment:
+      APP_ENVIRONMENT: development
       APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
@@ -60,6 +61,7 @@ jobs:
   deploy-develop:
     <<: *defaults
     environment:
+      APP_ENVIRONMENT: development
       APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
@@ -88,6 +90,7 @@ jobs:
   build-release:
     <<: *defaults
     environment:
+      APP_ENVIRONMENT: staging
       APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
@@ -141,6 +144,7 @@ jobs:
   deploy-release:
     <<: *defaults
     environment:
+      APP_ENVIRONMENT: staging
       APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
