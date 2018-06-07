@@ -175,7 +175,7 @@ jobs:
   build-tag:
     <<: *defaults
     environment:
-      APP_HOSTNAME: www.greenpeace.org
+      APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
@@ -228,7 +228,7 @@ jobs:
   deploy-tag:
     <<: *defaults
     environment:
-      APP_HOSTNAME: www.greenpeace.org
+      APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
       APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
       CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
