@@ -31,20 +31,21 @@ case $yn in
     * ) exit;;
 esac
 
+# FIXME Business logic, introduce option for separate STAGING environment
 if [[ ${CLOUDSQL_ENV} = "develop" ]]
 then
   rootUsername=${MYSQL_DEVELOPMENT_ROOT_USER}
   rootPassword=${MYSQL_DEVELOPMENT_ROOT_PASSWORD}
-  # Start SQL proxy in background
-  cloud_sql_proxy --quiet "-instances=${GCP_DEVELOPMENT_PROJECT}:${GCP_DEVELOPMENT_REGION}:${GCP_DEVELOPMENT_CLOUDSQL}=tcp:3306" \
-                   -credential_file=secrets/cloudsql-service-account.json &
+  instanceName="${GCP_DEVELOPMENT_PROJECT}:${GCP_DEVELOPMENT_REGION}:${GCP_DEVELOPMENT_CLOUDSQL}"
 else
   rootUsername=${MYSQL_PRODUCTION_ROOT_USER}
   rootPassword=${MYSQL_PRODUCTION_ROOT_PASSWORD}
-  # Start SQL proxy in background
-  cloud_sql_proxy --quiet "-instances=${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}=tcp:3306" \
-                   -credential_file=secrets/cloudsql-service-account.json &
+  instanceName="${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}"
 fi
+
+# Start SQL proxy in background
+cloud_sql_proxy --quiet "-instances=${instanceName}=tcp:3306" \
+                 -credential_file=secrets/cloudsql-service-account.json &
 
 # Generate files from template, and wait until TCP port is open
 MYSQL_DATABASE=${db} \
@@ -63,7 +64,7 @@ echo "User     '${MYSQL_USERNAME}'..."
 echo ""
 cat "delete_${CLOUDSQL_ENV}_user.sql"
 echo ""
-mysql -v --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf"  < "delete_${CLOUDSQL_ENV}_user.sql"
+mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" -v < "delete_${CLOUDSQL_ENV}_user.sql"
 
 echo "---------"
 echo ""
@@ -71,7 +72,7 @@ echo "Database '${db}' "
 echo ""
 cat "delete_${CLOUDSQL_ENV}_database.sql"
 echo ""
-mysql -v --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf"  < "delete_${CLOUDSQL_ENV}_database.sql"
+mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" -v < "delete_${CLOUDSQL_ENV}_database.sql"
 echo "---------"
 echo ""
  # Stop background jobs
