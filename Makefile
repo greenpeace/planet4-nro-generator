@@ -62,11 +62,11 @@ env: env-stateless env-sqlproxy env-wp
 
 .PHONY: env-stateless
 env-stateless:
-	add_environment_variable.sh WP_STATELESS_KEY "$(WP_STATELESS_KEY)"
+	add_ci_env_var.sh WP_STATELESS_KEY "$(WP_STATELESS_KEY)"
 
 .PHONY: env-sqlproxy
 env-sqlproxy:
-	add_environment_variable.sh SQLPROXY_KEY "$(SQLPROXY_KEY)"
+	add_ci_env_var.sh SQLPROXY_KEY "$(SQLPROXY_KEY)"
 
 .PHONY: env-wp
 env-wp:
