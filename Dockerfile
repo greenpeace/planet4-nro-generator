@@ -58,5 +58,5 @@ ENV \
     NEWRELIC_APPNAME="P4 Change My Name" \
     SOURCE_CONTENT_BUCKET="planet4-default-content" \
     SOURCE_CONTENT_SQLDUMP="planet4-defaultcontent_wordpress-v0.1.3.sql" \
-    STATELESS_BUCKET_REGION="us" \
+    STATELESS_BUCKET_LOCATION="us" \
     WP_TITLE="Greenpeace" \
