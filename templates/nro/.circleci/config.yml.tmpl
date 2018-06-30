@@ -185,6 +185,7 @@ jobs:
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+      MIN_REPLICA_COUNT: 2
       TYPE: "Tagged Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
