@@ -45,7 +45,7 @@ function curl_string() {
   [[ ${CONTINUE_ON_FAIL} = "true" ]] || exit 1
 }
 
-function get_json_var() {
+function get_response_var() {
   jq -M -r "$1" <<< $HTTP_BODY
 }
 
