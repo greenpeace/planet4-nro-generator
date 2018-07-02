@@ -49,17 +49,21 @@ function get_response_var() {
   jq -M -r "$1" <<< $HTTP_BODY
 }
 
+# ============================================================================
+#
+# Create new github repository
+#
 # shellcheck disable=2016
+endpoint="https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME}/repos"
 json=$(jq -n --arg name "${CIRCLE_PROJECT_REPONAME}" '{ name: $name }')
 
 echo ""
 echo "Generating github repository: github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 echo ""
-echo "$json"
-echo ""
-response="$(curl -s -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME}/repos")"
+curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "$endpoint"
 
-clone_url=$(jq -M -n -r "$response | .ssh_url")
+# Extract URL to clone later
+clone_url=$(get_response_var .ssh_url)
 
 if [[ $clone_url = "null" ]] && >&2 jq -C -n "$response | ."
 then
