@@ -3,28 +3,37 @@ set -eu
 
 [[ -f secrets/env ]] && source secrets/env
 
+# ============================================================================
+#
+# SANITY CHECKS
 
-HTTP_STATUS=
-HTTP_RESPONSE=
-HTTP_BODY=
+# Every site requires a non-blank APP_HOSTPATH
+
+[[ -z "${APP_HOSTPATH:-}" ]] && >&2 echo -e "Error: APP_HOSTPATH is not set.\nUsage: APP_HOSTPATH=international make" && exit 1
+
+# ============================================================================
 
 git config --global user.email "${GITHUB_USER_EMAIL}"
 git config --global user.name "${GITHUB_USER_NAME}"
 git config push.default simple
 
+git config --global -l
+
 eval "$(ssh-agent)"
 ssh-add "${HOME}/.ssh/id_rsa"
 
-[[ -z "${APP_HOSTPATH:-}" ]] && >&2 echo -e "Error: APP_HOSTPATH is not set.\nUsage: APP_HOSTPATH=international make" && exit 1
+# ============================================================================
+
+HTTP_STATUS=
+HTTP_RESPONSE=
+HTTP_BODY=
 
 function curl_string() {
   str=("$@")
-  echo "curl:" "${str[@]}"
+  echo "curl" "${str[@]}"
   HTTP_RESPONSE="$(curl -s --write-out "HTTPSTATUS:%{http_code}" "${str[@]}")"
   HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
   HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
-
-  set +x
 
   [[ $HTTP_STATUS -eq 201 ]] && return
   [[ $HTTP_STATUS -eq 204 ]] && return
@@ -35,7 +44,7 @@ function curl_string() {
     return
   fi
 
-  if [[ 300 -le $HTTP_STATUS && $HTTP_STATUS -lt 400 ]]
+  if [[ 300 -le $HTTP_STATUS ]]
   then
     >&2 echo "ERROR: HTTP_STATUS $HTTP_STATUS"
   fi
@@ -65,11 +74,6 @@ curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "
 # Extract URL to clone later
 clone_url=$(get_response_var .ssh_url)
 
-if [[ $clone_url = "null" ]] && >&2 jq -C -n "$response | ."
-then
-  >&2 echo "Error creating repository"
-  [[ ${CONTINUE_ON_FAIL} = "false" ]] && exit 1 || exit 0
-fi
 
 git config --global -l
 echo ""
