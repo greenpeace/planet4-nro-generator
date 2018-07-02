@@ -3,6 +3,11 @@ set -eu
 
 [[ -f secrets/env ]] && source secrets/env
 
+
+HTTP_STATUS=
+HTTP_RESPONSE=
+HTTP_BODY=
+
 git config --global user.email "${GITHUB_USER_EMAIL}"
 git config --global user.name "${GITHUB_USER_NAME}"
 git config push.default simple
@@ -11,6 +16,38 @@ eval "$(ssh-agent)"
 ssh-add "${HOME}/.ssh/id_rsa"
 
 [[ -z "${APP_HOSTPATH:-}" ]] && >&2 echo -e "Error: APP_HOSTPATH is not set.\nUsage: APP_HOSTPATH=international make" && exit 1
+
+function curl_string() {
+  str=("$@")
+  echo "curl:" "${str[@]}"
+  HTTP_RESPONSE="$(curl -s --write-out "HTTPSTATUS:%{http_code}" "${str[@]}")"
+  HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+  HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
+
+  set +x
+
+  [[ $HTTP_STATUS -eq 201 ]] && return
+  [[ $HTTP_STATUS -eq 204 ]] && return
+
+  if [[ 300 -le $HTTP_STATUS && $HTTP_STATUS -lt 400 ]]
+  then
+    >&2 echo "WARNING: HTTP_STATUS $HTTP_STATUS"
+    return
+  fi
+
+  if [[ 300 -le $HTTP_STATUS && $HTTP_STATUS -lt 400 ]]
+  then
+    >&2 echo "ERROR: HTTP_STATUS $HTTP_STATUS"
+  fi
+
+  >&2 jq -r <<< $HTTP_BODY
+
+  [[ ${CONTINUE_ON_FAIL} = "true" ]] || exit 1
+}
+
+function get_json_var() {
+  jq -M -r "$1" <<< $HTTP_BODY
+}
 
 # shellcheck disable=2016
 json=$(jq -n --arg name "${CIRCLE_PROJECT_REPONAME}" '{ name: $name }')
