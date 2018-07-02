@@ -87,6 +87,11 @@ echo ""
 echo "Add github machine user as 'admin' collaborator: ${GITHUB_MACHINE_USER}"
 echo ""
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
+
+# ============================================================================
+#
+# Clone new repository and prepare initial content
+#
 echo ""
 echo "---------"
 echo ""
@@ -129,6 +134,10 @@ echo ""
 echo "Commit ..."
 git commit -m ":robot: init"
 
+# ============================================================================
+#
+# Push new content
+#
 echo ""
 echo "---------"
 echo ""
