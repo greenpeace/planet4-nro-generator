@@ -74,8 +74,19 @@ curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "
 # Extract URL to clone later
 clone_url=$(get_response_var .ssh_url)
 
+# ============================================================================
+#
+# Add collaborator bot
+#
+endpoint="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/collaborators/${GITHUB_MACHINE_USER}"
+json=$(jq -n --arg permissions "admin" '{ permissions: $permissions }')
 
-git config --global -l
+echo ""
+echo "---------"
+echo ""
+echo "Add github machine user as 'admin' collaborator: ${GITHUB_MACHINE_USER}"
+echo ""
+curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
 echo ""
 echo "---------"
 echo ""
