@@ -7,7 +7,7 @@ Service accounts for Cloud Storage and CloudSQL, values in `secrets/env` populat
 File structure as follows:
 
 ```
-secrets/cloudsql-service-account.json
+secrets/service-account.json
 secrets/stateless-service-account.json
 secrets/env
 ```
@@ -31,7 +31,7 @@ STATELESS_BUCKET_LOCATION  |  us |  https://cloud.google.com/storage/docs/bucket
 
 ### Deploy
 
-```
+```bash
 # Simple:
 make run
 
@@ -49,7 +49,7 @@ Run the full command instead of `make run` if, for example, you wish to use a di
 
 Pass the Makefile target as a command parameter, eg:
 
-```
+```bash
 docker run --rm -ti \
   -v "$(PWD)/secrets:/app/secrets" \
   -v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \

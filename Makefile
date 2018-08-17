@@ -1,8 +1,18 @@
 SHELL := /bin/bash
-.ONESHELL:
 
-include secrets/env
-export $(shell sed 's/=.*//' secrets/env)
+NRO := $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
+ifeq ($(strip $(NRO)),)
+$(error NRO name not set, please run ./configure.sh)
+endif
+
+ifeq ("$(wildcard secrets/service-account/$(NRO).json)","")
+$(error Service account file not found: secrets/service-account/$(NRO).json)
+endif
+
+include secrets/common
+export $(shell sed 's/=.*//' secrets/common)
+include secrets/env.$(NRO)
+export $(shell sed 's/=.*//' secrets/env.$(NRO))
 
 CONTINUE_ON_FAIL ?= false
 
@@ -17,15 +27,25 @@ endif
 ################################################################################
 # Ensure these files exist, or that the keys are in environment
 
-WP_STATELESS_KEY        := $(shell cat secrets/stateless-service-account.json | openssl base64 -A)
-SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | openssl base64 -A)
+# WP_STATELESS_KEY        := $(shell cat secrets/stateless-service-account.json | openssl base64 -A)
+# SQLPROXY_KEY            := $(shell cat secrets/service-account.json | openssl base64 -A)
 
 ###############################################################################
 
 DEFAULT_GOAL: all
 
+
 .PHONY: all
-all: test prompt init env deploy
+all: link test prompt init env deploy
+
+clean:
+	rm secrets/env
+	rm secrets/service-account.json
+	rm secrets/stateless-service-account.json
+
+link:
+	ln -sf secrets/env.$(NRO) secrets/env
+	ln -sf secrets/service-account/$(NRO).json secrets/service-account.json
 
 .PHONY: test
 test:
@@ -97,6 +117,15 @@ delete-bucket-yes-i-mean-it:
 .PHONY: deploy
 deploy:
 	trigger_build.sh
+
+.PHONY:
+post-install: helper post-install-nginx post-install
+
+helper:
+	git clone https://github.com/greenpeace/planet4-helper-scripts helper
+
+post-install-nginx:
+
 
 .PHONY: run
 run:

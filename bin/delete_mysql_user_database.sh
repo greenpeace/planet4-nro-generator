@@ -45,7 +45,7 @@ fi
 
 # Start SQL proxy in background
 cloud_sql_proxy --quiet "-instances=${instanceName}=tcp:3306" \
-                 -credential_file=secrets/cloudsql-service-account.json &
+                 -credential_file=secrets/service-account.json &
 
 # Generate files from template, and wait until TCP port is open
 MYSQL_DATABASE=${db} \
