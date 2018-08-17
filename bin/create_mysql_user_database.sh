@@ -58,8 +58,8 @@ echo
 echo "SQL      gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz"
 echo
 head -c 200 "${SOURCE_CONTENT_SQLDUMP}"
-mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" "${db}" -v < "${SOURCE_CONTENT_SQLDUMP}"
 echo
+mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" "${db}" < "${SOURCE_CONTENT_SQLDUMP}"
 echo "---------"
 echo
 # Stop background jobs
