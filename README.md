@@ -23,7 +23,8 @@ In subsequent runs the `secrets/common` file should not require changes, so the 
 
 ### Configure:
 
-Variable                  | Default                             | Values
+#### NRO Variables:
+Variable                  | Default                             | Description
 --------------------------|-------------------------------------|---------------------------------------------------------------------------
 APP_HOSTPATH              |                                     | URL stub, eg: `/international`
 CONTAINER_PREFIX          | `planet4-${NRO}`                    | Prefix to name containers in the Helm release
@@ -38,6 +39,16 @@ MYSQL_PASSWORD            | `(generated)`                       | CloudSQL passw
 NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring
 STATELESS_BUCKET_LOCATION | us                                  | https://cloud.google.com/storage/docs/bucket-locations#available_locations
 
+#### Common secrets:
+
+Secret  | Default  | Description
+--|---|--
+CIRCLE_TOKEN  |   |  CircleCI token: https://circleci.com/account/api
+GITHUB_OAUTH_TOKEN  |   |  Github personal access token: https://github.com/settings/tokens
+MYSQL_PRODUCTION_ROOT_USER  |   |  Production environment CloudSQL user with all privileges
+MYSQL_PRODUCTION_ROOT_PASSWORD  |   |  Production environment CloudSQL password
+MYSQL_DEVELOPMENT_ROOT_USER  |  |  Development environment CloudSQL user with all privileges
+MYSQL_DEVELOPMENT_ROOT_PASSWORD  |   |  Develop environment CloudSQL password
 
 ### Deploy
 
