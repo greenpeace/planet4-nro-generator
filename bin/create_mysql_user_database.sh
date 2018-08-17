@@ -15,14 +15,14 @@ then
   rootUsername=${MYSQL_DEVELOPMENT_ROOT_USER}
   rootPassword=${MYSQL_DEVELOPMENT_ROOT_PASSWORD}
   # Start SQL proxy in background
-  cloud_sql_proxy --quiet "-instances=${GCP_DEVELOPMENT_PROJECT}:${GCP_DEVELOPMENT_REGION}:${GCP_DEVELOPMENT_CLOUDSQL}=tcp:3306" \
-                   -credential_file=secrets/service-account.json &
+  cloud_sql_proxy "-instances=${GCP_DEVELOPMENT_PROJECT}:${GCP_DEVELOPMENT_REGION}:${GCP_DEVELOPMENT_CLOUDSQL}=tcp:3306" \
+                   -credential_file=secrets/service-account/${NRO}.json &
 else
   rootUsername=${MYSQL_PRODUCTION_ROOT_USER}
   rootPassword=${MYSQL_PRODUCTION_ROOT_PASSWORD}
   # Start SQL proxy in background
-  cloud_sql_proxy --quiet "-instances=${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}=tcp:3306" \
-                   -credential_file=secrets/service-account.json &
+  cloud_sql_proxy "-instances=${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}=tcp:3306" \
+                   -credential_file=secrets/service-account/${NRO}.json &
 fi
 
 # Generate files from template, and wait until TCP port is open
