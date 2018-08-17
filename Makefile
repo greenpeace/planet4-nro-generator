@@ -124,6 +124,7 @@ run:
 	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) \
 	docker run --rm -ti \
 		--name p4-nro-generator \
+		-e "NRO=$(NRO)" \
 		-e "CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL)" \
 		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
