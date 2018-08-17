@@ -2,14 +2,14 @@
 set -eu
 
 echo "Initialising WP Stateless bucket"
-echo ""
+echo
 echo "Project: ${PROJECT}"
 echo "Labels:"
 echo " - nro:         ${APP_HOSTPATH}"
 echo " - environment: ${ENVIRONMENT}"
 echo "Bucket:  gs://${BUCKET}"
 echo "Region:  ${STATELESS_BUCKET_LOCATION}"
-echo ""
+echo
 
 gsutil ls -p "${PROJECT}" "gs://${BUCKET}" || gsutil mb -l "${STATELESS_BUCKET_LOCATION}" -p "${PROJECT}" "gs://${BUCKET}"
 

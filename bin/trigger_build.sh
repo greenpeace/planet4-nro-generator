@@ -34,9 +34,9 @@ git push --set-upstream origin develop
 
 git remote show origin
 
-echo ""
+echo
 echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
-echo ""
+echo
 
 if [[ "${MAKE_RELEASE,,}" != "true" ]]
 then
@@ -52,6 +52,6 @@ git remote show origin
 
 popd > /dev/null
 
-echo ""
+echo
 echo "Release deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/release%2Fv0.0.1"
-echo ""
+echo

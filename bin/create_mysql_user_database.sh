@@ -3,10 +3,13 @@ set -eu
 
 db=${MYSQL_USERNAME}_${MYSQL_DATABASE}_${CLOUDSQL_ENV}
 
+echo
+echo "---"
+echo
 echo "Creating ${CLOUDSQL_ENV} CloudSQL resources..."
-echo ""
+echo
 echo "Instance:  ${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}"
-echo ""
+echo
 if [[ ${CLOUDSQL_ENV} = "develop" ]]
 then
   rootUsername=${MYSQL_DEVELOPMENT_ROOT_USER}
@@ -33,31 +36,31 @@ dockerize \
  -wait tcp://127.0.0.1:3306 \
  -timeout 30s > /dev/null 2>&1
 
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "User     '${MYSQL_USERNAME}'..."
-echo ""
+echo
 head -c 200 "create_${CLOUDSQL_ENV}_user.sql"
-echo ""
+echo
 mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" -v  < "create_${CLOUDSQL_ENV}_user.sql"
 
 echo "---------"
-echo ""
+echo
 echo "Database '${db}' "
-echo ""
+echo
 head -c 200 "create_${CLOUDSQL_ENV}_database.sql"
-echo ""
+echo
 mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" -v  < "create_${CLOUDSQL_ENV}_database.sql"
 
 echo "---------"
-echo ""
+echo
 echo "SQL      gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz"
-echo ""
+echo
 head -c 200 "${SOURCE_CONTENT_SQLDUMP}"
-echo ""
 mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" "${db}" -v < "${SOURCE_CONTENT_SQLDUMP}"
+echo
 echo "---------"
-echo ""
+echo
 # Stop background jobs
 kill "$(jobs -p)"

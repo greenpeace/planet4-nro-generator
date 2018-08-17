@@ -66,9 +66,9 @@ function get_response_var() {
 endpoint="https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME}/repos"
 json=$(jq -n --arg name "${CIRCLE_PROJECT_REPONAME}" '{ name: $name }')
 
-echo ""
+echo
 echo "Generating github repository: github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
-echo ""
+echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "$endpoint"
 
 # Extract URL to clone later
@@ -81,20 +81,20 @@ clone_url=$(get_response_var .ssh_url)
 endpoint="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/collaborators/${GITHUB_MACHINE_USER}"
 json=$(jq -n --arg permissions "admin" '{ permissions: $permissions }')
 
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Add github machine user as 'admin' collaborator: ${GITHUB_MACHINE_USER}"
-echo ""
+echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
 
 # ============================================================================
 #
 # Clone new repository and prepare initial content
 #
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Cloning repository: $clone_url"
 
 git clone "$clone_url" src
@@ -102,35 +102,35 @@ git clone "$clone_url" src
 pushd src
 
 git checkout -b develop
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Syncing template/nro/ into src/"
 rsync -a ../templates/nro/ .
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Creating files from template ..."
 
 dockerize \
   -template .circleci/config.yml.tmpl:.circleci/config.yml \
   -template composer-local.json.tmpl:composer-local.json
 
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Cleaning .tmpl files ..."
 find . -type f -name '*.tmpl' -delete
 
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Staging files ..."
 git add .
 
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Commit ..."
 git commit -m ":robot: init"
 
@@ -138,9 +138,9 @@ git commit -m ":robot: init"
 #
 # Push new content
 #
-echo ""
+echo
 echo "---------"
-echo ""
+echo
 echo "Pushing to $clone_url ..."
 git push --set-upstream origin develop
 
