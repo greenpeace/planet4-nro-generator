@@ -5,26 +5,26 @@ set -eu
 
 db=${MYSQL_USERNAME}_${MYSQL_DATABASE}_${CLOUDSQL_ENV}
 
-echo ""
+echo
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-echo ""
+echo
 echo "WARNING: YOU ARE ABOUT TO DELETE MYSQL USERS AND DATABASES"
-echo ""
+echo
 if [[ ${CLOUDSQL_ENV} = "develop" ]]
 then
   echo "Instance: ${GCP_DEVELOPMENT_PROJECT}:${GCP_DEVELOPMENT_REGION}:${GCP_DEVELOPMENT_CLOUDSQL}"
 else
   echo "Instance: ${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}"
 fi
-echo ""
+echo
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-echo ""
+echo
 
 echo "User:     ${MYSQL_USERNAME}"
 echo "Database: ${db}"
-echo ""
+echo
 echo "This can not be undone!"
-echo ""
+echo
 read -p "Are you sure? [y/N] " yn
 case $yn in
     [Yy]* ) : ;;
@@ -44,8 +44,8 @@ else
 fi
 
 # Start SQL proxy in background
-cloud_sql_proxy --quiet "-instances=${instanceName}=tcp:3306" \
-                 -credential_file=secrets/cloudsql-service-account.json &
+cloud_sql_proxy "-instances=${instanceName}=tcp:3306" \
+                 -credential_file=secrets/service-account/${NRO}.json &
 
 # Generate files from template, and wait until TCP port is open
 MYSQL_DATABASE=${db} \
@@ -59,21 +59,21 @@ dockerize \
  -timeout 30s > /dev/null 2>&1
 
 echo "---------"
-echo ""
+echo
 echo "User     '${MYSQL_USERNAME}'..."
-echo ""
+echo
 cat "delete_${CLOUDSQL_ENV}_user.sql"
-echo ""
+echo
 mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" -v < "delete_${CLOUDSQL_ENV}_user.sql"
 
 echo "---------"
-echo ""
+echo
 echo "Database '${db}' "
-echo ""
+echo
 cat "delete_${CLOUDSQL_ENV}_database.sql"
-echo ""
+echo
 mysql --defaults-extra-file="mysql_${CLOUDSQL_ENV}.cnf" -v < "delete_${CLOUDSQL_ENV}_database.sql"
 echo "---------"
-echo ""
+echo
  # Stop background jobs
 kill "$(jobs -p)"

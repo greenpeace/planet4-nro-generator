@@ -2,60 +2,73 @@
 
 ## Requirements:
 
-Service accounts for Cloud Storage and CloudSQL, values in `secrets/env` populated (see `secrets/env.example`), and a valid Github SSH deploy key at `~/.ssh/id_rsa`.
-
-File structure as follows:
-
-```
-secrets/cloudsql-service-account.json
-secrets/stateless-service-account.json
-secrets/env
-```
+1. GCP service account with 'Storage Admin' and 'SQL Client' permissions
+2. Valid Github SSH deploy key at `~/.ssh/id_rsa`
+3. Github OAUTH token
 
 ## Deploying a New Planet4 CI Pipeline
 
 ### Quickstart:
-1.  Copy Cloud Storage and CloudSQL service account keys into `secrets`
-1.  Configure the file `secrets/env`. I suggest naming your file `env.<path of nro>` for example `env.coolpath`, then symlinking to that file:
-```
-ln -s secrets/env.coolpath secrets/env
-cp secrets/env.example secrets/env.coolpath
-```
-1.  Deploy with `make run`
+
+First install:
+1.  `./configure.sh`
+1.  Populate the generated `secrets/common` file with required values and re-run `./configure.sh`
+1.  Copy service account JSON key to `secrets/service-account/${NRO}.json`
+1.  `make run`
+
+In subsequent runs the `secrets/common` file should not require changes, so the process is only:
+1. `./configure.sh`
+2. Copy service account JSON key to `secrets/service-account/${NRO}.json`
+3. `make run`
 
 ### Configure:
 
-  Variable| Default | Values
---|---|--
-STATELESS_BUCKET_LOCATION  |  us |  https://cloud.google.com/storage/docs/bucket-locations#available_locations
+Variable                  | Default                             | Values
+--------------------------|-------------------------------------|---------------------------------------------------------------------------
+APP_HOSTPATH              |                                     | URL stub, eg: `/international`
+CONTAINER_PREFIX          | `planet4-${NRO}`                    | Prefix to name containers in the Helm release
+GITHUB_REPOSITORY_NAME    | `planet4-${NRO}`                    | GitHub repository name, eg: `planet4-international`
+GITHUB_USER_EMAIL         | `$(git config --global user.email)` | Github email
+GITHUB_USER_EMAIL         | `$(git config --global user.name)`  | Github username
+MAKE_MASTER               | true                                | Creates production environment resources
+MAKE_RELEASE              | true                                | Creates release environment resources
+NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring
+MYSQL_USERNAME            | `planet4-${NRO}`                    | CloudSQL username (will be created)
+MYSQL_PASSWORD            | `(generated)`                       | CloudSQL password
+NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring
+STATELESS_BUCKET_LOCATION | us                                  | https://cloud.google.com/storage/docs/bucket-locations#available_locations
+
 
 ### Deploy
 
-```
+```bash
 # Simple:
 make run
 
 # Full command:
 docker build -t p4-build .
 docker run --rm -ti \
-  -v "$(PWD)/secrets:/app/secrets" \
-  -v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
+  --name p4-nro-generator \
+  -e "NRO=${NRO}" \
+  -v "${HOME}/.ssh/id_rsa:/root/.ssh/id_rsa" \
+  -v "${PWD}/secrets:/app/secrets" \
   p4-build
 ```
 
-Run the full command instead of `make run` if, for example, you wish to use a different SSH key by modifying the line `$(HOME)/.ssh/id_rsa`
+If you don't have a github-ready deploy key at ~/.ssh/id_rsa you may deploy by changing the Makefile or running the long-form command above and changing the line `-v "${HOME}/.ssh/id_rsa:/root/.ssh/id_rsa"` accordingly.
 
 ## Deleting all associated resources
 
 Pass the Makefile target as a command parameter, eg:
 
-```
+```bash
+# Deletes all databases, buckets, repositories etc.
 docker run --rm -ti \
   -v "$(PWD)/secrets:/app/secrets" \
   -v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
   p4-build delete-yes-i-mean-it
 
-# or via Make
+# via Make
 make run delete-yes-i-mean-it
 ```
 

@@ -1,8 +1,18 @@
 SHELL := /bin/bash
-.ONESHELL:
 
-include secrets/env
-export $(shell sed 's/=.*//' secrets/env)
+NRO := $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
+ifeq ($(strip $(NRO)),)
+$(error NRO name not set, please run ./configure.sh)
+endif
+
+ifeq ("$(wildcard secrets/service-account/$(NRO).json)","")
+$(error Service account file not found: secrets/service-account/$(NRO).json)
+endif
+
+include secrets/common
+export $(shell sed 's/=.*//' secrets/common)
+include secrets/env.$(NRO)
+export $(shell sed 's/=.*//' secrets/env.$(NRO))
 
 CONTINUE_ON_FAIL ?= false
 
@@ -17,12 +27,13 @@ endif
 ################################################################################
 # Ensure these files exist, or that the keys are in environment
 
-WP_STATELESS_KEY        := $(shell cat secrets/stateless-service-account.json | openssl base64 -A)
-SQLPROXY_KEY            := $(shell cat secrets/cloudsql-service-account.json | openssl base64 -A)
+WP_STATELESS_KEY        := $(shell cat secrets/service-account/$(NRO).json | openssl base64 -A)
+SQLPROXY_KEY            := $(WP_STATELESS_KEY)
 
 ###############################################################################
 
 DEFAULT_GOAL: all
+
 
 .PHONY: all
 all: test prompt init env deploy
@@ -98,12 +109,22 @@ delete-bucket-yes-i-mean-it:
 deploy:
 	trigger_build.sh
 
+.PHONY:
+post-install: helper post-install-nginx post-install
+
+helper:
+	git clone https://github.com/greenpeace/planet4-helper-scripts helper
+
+post-install-nginx:
+
+
 .PHONY: run
 run:
 	docker build -t p4-build .
 	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) \
 	docker run --rm -ti \
 		--name p4-nro-generator \
+		-e "NRO=$(NRO)" \
 		-e "CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL)" \
 		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \

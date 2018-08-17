@@ -16,15 +16,15 @@ then
   ssh-add "${HOME}/.ssh/id_rsa"
 fi
 
-git clone -b develop "git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
+git clone -b develop "git@github.com:${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}.git"
 
 YEAR=$(date +%Y)
 export YEAR
 
 dockerize \
-  -template "templates/LICENSE.tmpl:${CIRCLE_PROJECT_REPONAME}/LICENSE"
+  -template "templates/LICENSE.tmpl:${GITHUB_REPOSITORY_NAME}/LICENSE"
 
-pushd "${CIRCLE_PROJECT_REPONAME}"  > /dev/null
+pushd "${GITHUB_REPOSITORY_NAME}"  > /dev/null
 
 git add .
 
@@ -34,9 +34,9 @@ git push --set-upstream origin develop
 
 git remote show origin
 
-echo ""
-echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
-echo ""
+echo
+echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
+echo
 
 if [[ "${MAKE_RELEASE,,}" != "true" ]]
 then
@@ -52,6 +52,6 @@ git remote show origin
 
 popd > /dev/null
 
-echo ""
-echo "Release deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/release%2Fv0.0.1"
-echo ""
+echo
+echo "Release deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}/tree/release%2Fv0.0.1"
+echo

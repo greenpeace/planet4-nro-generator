@@ -29,7 +29,7 @@ CMD ["all"]
 ENV \
     APP_HOSTNAME="greenpeace.org" \
     APP_HOSTPATH="" \
-    CIRCLE_PROJECT_REPONAME="planet4-base-test" \
+    GITHUB_REPOSITORY_NAME="planet4-base-test" \
     CIRCLE_PROJECT_USERNAME="greenpeace" \
     CIRCLE_TOKEN="" \
     CONTAINER_PREFIX="planet4-base-test" \

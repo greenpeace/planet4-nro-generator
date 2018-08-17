@@ -1,5 +1,7 @@
 src/
 bucket/
+helper/
+NRO
 
 \.DS_Store
 
