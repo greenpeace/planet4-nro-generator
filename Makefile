@@ -36,16 +36,7 @@ DEFAULT_GOAL: all
 
 
 .PHONY: all
-all: link test prompt init env deploy
-
-clean:
-	rm secrets/env
-	rm secrets/service-account.json
-	rm secrets/stateless-service-account.json
-
-link:
-	ln -sf secrets/env.$(NRO) secrets/env
-	ln -sf secrets/service-account/$(NRO).json secrets/service-account.json
+all: test prompt init env deploy
 
 .PHONY: test
 test:
