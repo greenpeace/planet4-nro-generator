@@ -64,10 +64,10 @@ function get_response_var() {
 #
 # shellcheck disable=2016
 endpoint="https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME}/repos"
-json=$(jq -n --arg name "${CIRCLE_PROJECT_REPONAME}" '{ name: $name }')
+json=$(jq -n --arg name "${GITHUB_REPOSITORY_NAME}" '{ name: $name }')
 
 echo
-echo "Generating github repository: github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+echo "Generating github repository: github.com/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
 echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "$endpoint"
 
@@ -78,7 +78,7 @@ clone_url=$(get_response_var .ssh_url)
 #
 # Add collaborator bot
 #
-endpoint="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/collaborators/${GITHUB_MACHINE_USER}"
+endpoint="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}/collaborators/${GITHUB_MACHINE_USER}"
 json=$(jq -n --arg permissions "admin" '{ permissions: $permissions }')
 
 echo

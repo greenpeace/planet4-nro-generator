@@ -10,7 +10,7 @@ echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo
 echo "WARNING: YOU ARE ABOUT TO DELETE A GITHUB REPOSITORY"
 echo
-echo "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+echo "https://github.com/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
 echo
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo
@@ -22,7 +22,7 @@ case $yn in
 esac
 
 echo
-echo "Deleting github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} ..."
+echo "Deleting github.com/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME} ..."
 echo
 
-curl -i -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X DELETE https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+curl -i -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X DELETE https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}
