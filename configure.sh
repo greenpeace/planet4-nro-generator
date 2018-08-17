@@ -3,6 +3,18 @@ set -eauo pipefail
 
 pw_length=32
 
+read_properties()
+{
+  file="$1"
+  while IFS="=" read -r key value; do
+    case "$key" in
+      '#'*) ;;
+      *)
+        eval "$key=\"$value\""
+    esac
+  done < "$file"
+}
+
 if [[ ! -f "secrets/common" ]]
 then
   echo "WARNING: File not found: secrets/common"
@@ -25,7 +37,7 @@ EOF
   echo "Please edit file 'secrets/common', fill fields as appropriate and re-run ./configure.sh"
   exit 1
 else
-  . secrets/common
+  read_properties secrets/common
 fi
 
 if [[ -f "NRO" ]]
@@ -51,7 +63,7 @@ nro_sanitised=$(echo $nro | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr 
 
 if [[ -f "secrets/env.${nro_sanitised}" ]]
 then
-  . secrets/env.${nro_sanitised}
+  read_properties secrets/env.${nro_sanitised}
 fi
 
 echo

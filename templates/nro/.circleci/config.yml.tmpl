@@ -19,42 +19,20 @@ jobs:
       TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
-      WP_TITLE: {{ .Env.WP_TITLE }} Development
     steps:
       - setup_remote_docker
-
+      - run: activate-gcloud-account.sh
+      - run: mkdir -p /tmp/workspace/var
+      - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
+      - run: make
       - run:
-          name: Configure
-          command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
-            mkdir -p /tmp/workspace/var
-            echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
-
-      - run:
-          name: Build
-          working_directory: /home/circleci
-          command: |
-            if ! make
-            then
-              ${HOME}/scripts/notify-job-failure.sh
-              exit 1
-            fi
-
+          name: Notify failure
+          when: on_fail
+          command: TYPE="Build" notify-job-failure.sh
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
             - var
-
-  # test:
-  #   <<: *defaults
-  #   steps:
-  #     - run:
-  #         name: Placeholder
-  #         command: |
-  #           echo "Branch: ${CIRCLE_BRANCH}"
-  #           echo "Build:  ${CIRCLE_BUILD_NUM}"
-  #           echo "Tag:    ${CIRCLE_TAG}"
-  #           echo "No tests implemented yet"
 
   deploy-develop:
     <<: *defaults
@@ -66,25 +44,14 @@ jobs:
       CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
       GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
       HELM_NAMESPACE: develop
+      NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
-      WP_TITLE: {{ .Env.WP_TITLE }} Development
     steps:
       - attach_workspace:
           at: /tmp/workspace
-
-      - run:
-          name: Configure
-          command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
-
-      - run:
-          name: Deploy new containers
-          environment:
-            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
-          command: |
-            export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
-            make -j2 deploy
+      - run: activate-gcloud-account.sh
+      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
 
   build-release:
     <<: *defaults
@@ -101,42 +68,20 @@ jobs:
       TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
-      WP_TITLE: {{ .Env.WP_TITLE }} Release Candidate
     steps:
       - setup_remote_docker
-
+      - run: activate-gcloud-account.sh
+      - run: mkdir -p /tmp/workspace/var
+      - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
+      - run: make
       - run:
-          name: Configure
-          command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
-            mkdir -p /tmp/workspace/var
-            echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
-
-      - run:
-          name: Build
-          working_directory: /home/circleci
-          command: |
-            if ! make
-            then
-              ${HOME}/scripts/notify-job-failure.sh
-              exit 1
-            fi
-
+          name: Notify failure
+          when: on_fail
+          command: TYPE="Build" notify-job-failure.sh
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
             - var
-
-  # test-release:
-  #   <<: *defaults
-  #   steps:
-  #     - run:
-  #         name: Placeholder
-  #         command: |
-  #           echo "Branch: ${CIRCLE_BRANCH}"
-  #           echo "Build:  ${CIRCLE_BUILD_NUM}"
-  #           echo "Tag:    ${CIRCLE_TAG}"
-  #           echo "No tests implemented yet"
 
   deploy-release:
     <<: *defaults
@@ -150,25 +95,14 @@ jobs:
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
+      NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
-      WP_TITLE: {{ .Env.WP_TITLE }} Release Candidate
     steps:
       - attach_workspace:
           at: /tmp/workspace
-
-      - run:
-          name: Configure
-          command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
-
-      - run:
-          name: Deploy new containers
-          environment:
-            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
-          command: |
-            export BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num)
-            make -j2 deploy
+      - run: activate-gcloud-account.sh
+      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
 
   build-tag:
     <<: *defaults
@@ -185,42 +119,20 @@ jobs:
       TYPE: "Tagged Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
-      WP_TITLE: {{ .Env.WP_TITLE }}
     steps:
       - setup_remote_docker
-
+      - run: activate-gcloud-account.sh
+      - run: mkdir -p /tmp/workspace/var
+      - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
+      - run: make
       - run:
-          name: Configure
-          command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
-            mkdir -p /tmp/workspace/var
-            echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
-
-      - run:
-          name: Build
-          working_directory: /home/circleci
-          command: |
-            if ! make
-            then
-              ${HOME}/scripts/notify-job-failure.sh
-              exit 1
-            fi
-
+          name: Notify failure
+          when: on_fail
+          command: TYPE="Build" notify-job-failure.sh
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
             - var
-
-  # test-tag:
-  #   <<: *defaults
-  #   steps:
-  #     - run:
-  #         name: Placeholder
-  #         command: |
-  #           echo "Branch: ${CIRCLE_BRANCH}"
-  #           echo "Build:  ${CIRCLE_BUILD_NUM}"
-  #           echo "Tag:    ${CIRCLE_TAG}"
-  #           echo "No tests implemented yet"
 
   deploy-tag:
     <<: *defaults
@@ -233,24 +145,14 @@ jobs:
       GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
       HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
       HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+      NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
       WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
       WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
-      WP_TITLE: {{ .Env.WP_TITLE }}
     steps:
       - attach_workspace:
           at: /tmp/workspace
-
-      - run:
-          name: Configure
-          command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
-
-      - run:
-          name: Deploy new containers
-          environment:
-            NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
-          command: |
-            make -j2 deploy
+      - run: activate-gcloud-account.sh
+      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
 
 workflows:
   version: 2
