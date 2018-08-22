@@ -5,8 +5,8 @@ ifeq ($(strip $(NRO)),)
 $(error NRO name not set, please run ./configure.sh)
 endif
 
-ifeq ("$(wildcard secrets/service-account/$(NRO).json)","")
-$(error Service account file not found: secrets/service-account/$(NRO).json)
+ifeq ("$(wildcard secrets/service-accounts/$(NRO).json)","")
+$(error Service account file not found: secrets/service-accounts/$(NRO).json)
 endif
 
 include secrets/common

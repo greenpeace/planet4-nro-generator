@@ -2,14 +2,16 @@
 set -eu
 
 # Authenticate with wp-stateless account to ensure we can pull from SQL bucket
-gcloud auth activate-service-account --key-file secrets/service-account/${NRO}.json
+gcloud auth activate-service-account --key-file secrets/service-accounts/${NRO}.json
 
 ##############################################################################
-
-ENVIRONMENT="development" \
-BUCKET=${CONTAINER_PREFIX}-stateless-develop \
-PROJECT=${GCP_DEVELOPMENT_PROJECT} \
-create_stateless_bucket.sh
+if [[ ${{MAKE_DEVELOP,,} = "true" ]]
+then
+  ENVIRONMENT="development" \
+  BUCKET=${CONTAINER_PREFIX}-stateless-develop \
+  PROJECT=${GCP_DEVELOPMENT_PROJECT} \
+  create_stateless_bucket.sh
+fi
 
 ##############################################################################
 

@@ -13,12 +13,12 @@
 First install:
 1.  `./configure.sh`
 1.  Populate the generated `secrets/common` file with required values and re-run `./configure.sh`
-1.  Copy service account JSON key to `secrets/service-account/${NRO}.json`
+1.  Copy service account JSON key to `secrets/service-accounts/${NRO}.json`
 1.  `make run`
 
 In subsequent runs the `secrets/common` file should not require changes, so the process is only:
 1. `./configure.sh`
-2. Copy service account JSON key to `secrets/service-account/${NRO}.json`
+2. Copy service account JSON key to `secrets/service-accounts/${NRO}.json`
 3. `make run`
 
 ### Configure:
