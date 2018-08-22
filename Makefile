@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-NRO := $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
+NRO ?= $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 ifeq ($(strip $(NRO)),)
 $(error NRO name not set, please run ./configure.sh)
 endif
