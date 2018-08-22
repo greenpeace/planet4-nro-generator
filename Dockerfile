@@ -4,15 +4,15 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
     apt-get update && \
     apt-get install -y -q --no-install-recommends \
-     git-core \
-     google-cloud-sdk \
-     jq \
-     make \
-     mysql-client \
-     rsync \
-     && \
-    rm -r /var/lib/apt/lists/* && \
-    wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /app/bin/cloud_sql_proxy && \
+      git-core \
+      google-cloud-sdk \
+      jq \
+      make \
+      mysql-client \
+      rsync \
+      unzip \
+      && \
+    rm -r /var/lib/apt/lists/*
     chmod 755 /app/bin/cloud_sql_proxy && \
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
