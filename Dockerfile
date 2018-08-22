@@ -43,8 +43,8 @@ ENV \
     GITHUB_MACHINE_USER="greenpeace-circleci" \
     GOOGLE_PROJECT_ID="planet-4-151612" \
     INFRA_VERSION="latest" \
+    MAKE_DEVELOP="true" \
     MAKE_MASTER="true" \
-    MAKE_RELEASE="true" \
     MAKE_RELEASE="true" \
     MYSQL_DATABASE="wordpress" \
     MYSQL_DEVELOPMENT_ROOT_PASSWORD="" \
