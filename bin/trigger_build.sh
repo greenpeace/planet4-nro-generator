@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
+
 
 eval "$(ssh-agent)"
 ssh-add "${HOME}/.ssh/id_rsa"
