@@ -14,8 +14,6 @@ export $(shell sed 's/=.*//' secrets/common)
 include secrets/env.$(NRO)
 export $(shell sed 's/=.*//' secrets/env.$(NRO))
 
-CONTINUE_ON_FAIL ?= false
-
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
 # use the rest as arguments for "run"
