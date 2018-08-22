@@ -31,7 +31,6 @@ ENV \
     CIRCLE_PROJECT_USERNAME="greenpeace" \
     CIRCLE_TOKEN="" \
     CONTAINER_PREFIX="planet4-base-test" \
-    CONTINUE_ON_FAIL="false" \
     GCP_DEVELOPMENT_CLOUDSQL="p4-develop-k8s" \
     GCP_DEVELOPMENT_CLUSTER="planet-4-151612" \
     GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
