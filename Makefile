@@ -22,12 +22,6 @@ RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
 endif
 
-################################################################################
-# Ensure these files exist, or that the keys are in environment
-
-WP_STATELESS_KEY        := $(shell cat secrets/service-account/$(NRO).json | openssl base64 -A)
-SQLPROXY_KEY            := $(WP_STATELESS_KEY)
-
 ###############################################################################
 
 DEFAULT_GOAL: all
@@ -86,8 +80,8 @@ delete-yes-i-mean-it: delete-repo-yes-i-mean-it delete-project-yes-i-mean-it del
 delete-repo-yes-i-mean-it:
 	delete_github_repo.sh
 
-.PHONY: delete-project-yes-i-mean-it
-delete-project-yes-i-mean-it:
+# .PHONY: delete-project-yes-i-mean-it
+# delete-project-yes-i-mean-it:
 
 .PHONY: delete-db-yes-i-mean-it
 delete-db-yes-i-mean-it:
