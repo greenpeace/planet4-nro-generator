@@ -13,6 +13,8 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
       unzip \
       && \
     rm -r /var/lib/apt/lists/*
+
+RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /app/bin/cloud_sql_proxy && \
     chmod 755 /app/bin/cloud_sql_proxy && \
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
