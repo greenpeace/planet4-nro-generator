@@ -10,7 +10,10 @@ gsutil cp "gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz" . && gunz
 
 ################################################################################
 
-CLOUDSQL_ENV=develop MYSQL_ROOT_PASSWORD=${MYSQL_DEVELOPMENT_ROOT_PASSWORD} create_mysql_user_database.sh
+if [[ ${MAKE_DEVELOP,,} = "true" ]]
+then
+  CLOUDSQL_ENV=develop MYSQL_ROOT_PASSWORD=${MYSQL_DEVELOPMENT_ROOT_PASSWORD} create_mysql_user_database.sh
+fi
 
 ################################################################################
 
