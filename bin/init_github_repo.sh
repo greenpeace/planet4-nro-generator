@@ -51,7 +51,6 @@ function curl_string() {
 
   >&2 jq -r <<< $HTTP_BODY
 
-  [[ ${CONTINUE_ON_FAIL} = "true" ]] || exit 1
 }
 
 function get_response_var() {
