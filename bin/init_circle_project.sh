@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
+
 
 echo "User:    ${CIRCLE_PROJECT_USERNAME}"
 echo "Project: ${GITHUB_REPOSITORY_NAME}"

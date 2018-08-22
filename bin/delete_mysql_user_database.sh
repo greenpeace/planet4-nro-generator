@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
 
 db=${MYSQL_USERNAME}_${MYSQL_DATABASE}_${CLOUDSQL_ENV}
 
