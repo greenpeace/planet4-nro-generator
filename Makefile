@@ -74,14 +74,11 @@ env-wp:
 ################################################################################
 
 .PHONY: delete-yes-i-mean-it
-delete-yes-i-mean-it: delete-repo-yes-i-mean-it delete-project-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it
+delete-yes-i-mean-it:	delete-repo-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it
 
 .PHONY: delete-repo-yes-i-mean-it
 delete-repo-yes-i-mean-it:
 	delete_github_repo.sh
-
-# .PHONY: delete-project-yes-i-mean-it
-# delete-project-yes-i-mean-it:
 
 .PHONY: delete-db-yes-i-mean-it
 delete-db-yes-i-mean-it:
