@@ -67,15 +67,11 @@ init-bucket:
 
 ################################################################################
 .PHONY: env
-env: env-stateless env-sqlproxy env-wp
+env: env-ci env-wp
 
-.PHONY: env-stateless
-env-stateless:
-	add_ci_env_var.sh WP_STATELESS_KEY "$(WP_STATELESS_KEY)"
-
-.PHONY: env-sqlproxy
-env-sqlproxy:
-	add_ci_env_var.sh SQLPROXY_KEY "$(SQLPROXY_KEY)"
+.PHONY: env-ci
+env-ci:
+	init_ci_secrets.sh
 
 .PHONY: env-wp
 env-wp:
