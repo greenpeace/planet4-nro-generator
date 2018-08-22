@@ -109,11 +109,9 @@ post-install-nginx:
 .PHONY: run
 run:
 	docker build -t p4-build .
-	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) \
 	docker run --rm -ti \
 		--name p4-nro-generator \
 		-e "NRO=$(NRO)" \
-		-e "CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL)" \
 		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
-		p4-build $(RUN_ARGS)
+		p4-build make $(RUN_ARGS)
