@@ -22,9 +22,7 @@ VOLUME /app/secrets
 
 COPY . /app
 
-ENTRYPOINT ["make"]
-
-CMD ["all"]
+CMD ["make","all"]
 
 ENV \
     APP_HOSTNAME="greenpeace.org" \
