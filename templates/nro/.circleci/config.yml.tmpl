@@ -3,7 +3,7 @@ version: 2
 defaults: &defaults
   docker:
     - image: gcr.io/planet-4-151612/p4-builder:{{ .Env.INFRA_VERSION }}
-  working_directory:  /home/circleci/
+  working_directory:  /home/circleci
 
 job_environments:
   common_environment: &common_environment
@@ -41,7 +41,7 @@ job_environments:
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
 
-job_descriptions:
+job_definitions:
   build_steps: &build_steps
     steps:
       - setup_remote_docker
