@@ -68,7 +68,7 @@ job_descriptions:
           at: /tmp/workspace
       - run: git-current-tag.sh | tee /tmp/workspace/var/old_release
       - run: increment-version.sh $(cat /tmp/workspace/var/old_release) | tee /tmp/workspace/var/new_release
-      - run: release-start.sh $(cat /tmp/workspace/var/new_release) || git checkout feature/$(cat /tmp/workspace/var/new_release)
+      - run: release-start.sh $(cat /tmp/workspace/var/new_release) || git checkout release/$(cat /tmp/workspace/var/new_release)
       - run: mv composer-local.json /tmp/workspace
       - run: jq 'del(.require)' /tmp/workspace/composer-local.json > /tmp/workspace/composer-local-1.json
       - run: jq ".version=\"$(cat /tmp/workspace/var/new_release)\"" /tmp/workspace/composer-local-1.json > composer-local.json
@@ -77,7 +77,7 @@ job_descriptions:
       - run:
           name: git commit
           command: |
-            git commit -m --allow-empty ":robot: Release $(cat /tmp/workspace/var/new_release)"
+            git commit --allow-empty -m ":robot: Release $(cat /tmp/workspace/var/new_release)"
       - run: git push origin --delete release/$(cat /tmp/workspace/var/old_release) || exit 0
       - run: git push -u origin release/$(cat /tmp/workspace/var/new_release)
       - run:
