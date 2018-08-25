@@ -2,8 +2,6 @@
 # shellcheck disable=SC2016
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
-
 key=${1}
 value=${2}
 

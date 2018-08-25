@@ -15,7 +15,7 @@ gsutil ls -p "${PROJECT}" "gs://${BUCKET}" || gsutil mb -l "${STATELESS_BUCKET_L
 
 gsutil -m iam -R ch allUsers:objectViewer "gs://${BUCKET}"
 
-gsutil -m iam -R ch "serviceAccount:$(jq -r '.client_email' secrets/service-account/${NRO}.json):admin" "gs://${BUCKET}"
+gsutil -m iam -R ch "serviceAccount:$(jq -r '.client_email' secrets/service-accounts/${NRO}.json):admin" "gs://${BUCKET}"
 
 # FIXME define NRO_LABEL variable instead of relying on APP_HOSTPATH
 gsutil label ch -l "nro:${APP_HOSTPATH}" "gs://${BUCKET}"

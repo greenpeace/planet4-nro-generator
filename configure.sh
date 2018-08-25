@@ -8,37 +8,68 @@ read_properties()
   file="$1"
   while IFS="=" read -r key value; do
     case "$key" in
-      '#'*) ;;
-      *)
-        eval "$key=\"$value\""
+      '') : ;;
+      '#'*) : ;;
+      *) eval "$key=\"$value\""
     esac
   done < "$file"
 }
 
 if [[ ! -f "secrets/common" ]]
 then
-  echo "WARNING: File not found: secrets/common"
-  echo "Scaffolding common secrets file ..."
+  echo "Creating file: secrets/common ..."
+  echo
+  echo "---"
+  echo
+  echo "CircleCI token: https://circleci.com/account/api"
+  read -sp "CIRCLE_TOKEN " CIRCLE_TOKEN
+  echo
+  echo "---"
+  echo
+  echo "Github personal access token: https://github.com/settings/tokens"
+  read -sp "GITHUB_OAUTH_TOKEN " GITHUB_OAUTH_TOKEN
+  echo
+  echo "---"
+  echo
+  echo "Production environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
+  read -p "MYSQL_PRODUCTION_ROOT_USER [root] " prod_root_user
+  MYSQL_PRODUCTION_ROOT_USER=${prod_root_user:-root}
+  read -sp "MYSQL_PRODUCTION_ROOT_PASSWORD " MYSQL_PRODUCTION_ROOT_PASSWORD
+  echo
+  echo "---"
+  echo
+  echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
+  read -p "MYSQL_DEVELOPMENT_ROOT_USER [root] " dev_root_user
+  MYSQL_DEVELOPMENT_ROOT_USER=${dev_root_user:-root}
+  read -sp "MYSQL_DEVELOPMENT_ROOT_PASSWORD " MYSQL_DEVELOPMENT_ROOT_PASSWORD
+  echo
+  echo "---"
 
   cat <<EOF > secrets/common
 # CircleCI token: https://circleci.com/account/api
-CIRCLE_TOKEN=
+CIRCLE_TOKEN=$CIRCLE_TOKEN
+
 # Github personal access token: https://github.com/settings/tokens
-GITHUB_OAUTH_TOKEN=
-# Production environment CloudSQL user with all privileges
-# https://console.cloud.google.com/sql/instances
-MYSQL_PRODUCTION_ROOT_USER=
-MYSQL_PRODUCTION_ROOT_PASSWORD=
+GITHUB_OAUTH_TOKEN=$GITHUB_OAUTH_TOKEN
+
 # Development environment CloudSQL user with all privileges
 # https://console.cloud.google.com/sql/instances/p4-develop-k8s/overview?project=planet-4-151612
-MYSQL_DEVELOPMENT_ROOT_USER=
-MYSQL_DEVELOPMENT_ROOT_PASSWORD=
+MYSQL_DEVELOPMENT_ROOT_USER=${MYSQL_DEVELOPMENT_ROOT_USER}
+MYSQL_DEVELOPMENT_ROOT_PASSWORD=${MYSQL_DEVELOPMENT_ROOT_PASSWORD}
+
+# Production environment CloudSQL user with all privileges
+# https://console.cloud.google.com/sql/instances
+MYSQL_PRODUCTION_ROOT_USER=${MYSQL_PRODUCTION_ROOT_USER}
+MYSQL_PRODUCTION_ROOT_PASSWORD=${MYSQL_PRODUCTION_ROOT_PASSWORD}
+
 EOF
-  echo "Please edit file 'secrets/common', fill fields as appropriate and re-run ./configure.sh"
-  exit 1
-else
-  read_properties secrets/common
+  echo
+  echo "Secrets file written to 'secrets/common'"
+  echo "Please ensure values are accurate."
+  echo
 fi
+
+read_properties secrets/common
 
 if [[ -f "NRO" ]]
 then
@@ -47,8 +78,10 @@ else
   previous_nro=
 fi
 
+echo "---"
+echo
 nro=${1:-$previous_nro}
-read -p "Enter NRO Name: [$nro] " this_nro
+read -p "Enter NRO display name, eg: 'Netherlands' [$nro] " this_nro
 nro=${this_nro:-$nro}
 
 if [[ -z "${nro}" ]]
@@ -73,43 +106,33 @@ APP_HOSTPATH=${APP_HOSTPATH:-$nro_sanitised}
 read -p "APP_HOSTPATH [${APP_HOSTPATH}] " app_hostpath
 APP_HOSTPATH=${app_hostpath:-$APP_HOSTPATH}
 echo
-echo "---"
-echo
 GITHUB_REPOSITORY_NAME=${GITHUB_REPOSITORY_NAME:-planet4-${nro_sanitised}}
 read -p "GITHUB_REPOSITORY_NAME [${GITHUB_REPOSITORY_NAME}] " repo_name
 GITHUB_REPOSITORY_NAME=${repo_name:-$GITHUB_REPOSITORY_NAME}
-echo
-echo "---"
 echo
 CONTAINER_PREFIX=${CONTAINER_PREFIX:-planet4-${nro_sanitised}}
 read -p "CONTAINER_PREFIX [${CONTAINER_PREFIX}] " container_prefix
 CONTAINER_PREFIX=${container_prefix:-$CONTAINER_PREFIX}
 echo
-echo "---"
-echo
 GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-$(git config --global user.email)}
 read -p "GITHUB_USER_EMAIL [${GITHUB_USER_EMAIL}] " git_email
 GITHUB_USER_EMAIL=${git_email:-$GITHUB_USER_EMAIL}
-echo
-echo "---"
 echo
 GITHUB_USER_NAME=${GITHUB_USER_NAME:-$(git config --global user.name)}
 read -p "GITHUB_USER_NAME [${GITHUB_USER_NAME}] " git_name
 GITHUB_USER_NAME=${git_name:-$GITHUB_USER_NAME}
 echo
-echo "---"
-echo
-MAKE_MASTER=${MAKE_MASTER:-true}
-read -p "MAKE_MASTER [${MAKE_MASTER}] " make_master
-MAKE_MASTER=${make_master:-$MAKE_MASTER}
-echo
-echo "---"
+MAKE_DEVELOP=${MAKE_DEVELOP:-true}
+read -p "MAKE_DEVELOP [${MAKE_DEVELOP}] " make_develop
+MAKE_DEVELOP=${make_develop:-$MAKE_DEVELOP}
 echo
 MAKE_RELEASE=${MAKE_RELEASE:-true}
 read -p "MAKE_RELEASE [${MAKE_RELEASE}] " make_release
 MAKE_RELEASE=${make_release:-$MAKE_RELEASE}
 echo
-echo "---"
+MAKE_MASTER=${MAKE_MASTER:-true}
+read -p "MAKE_MASTER [${MAKE_MASTER}] " make_master
+MAKE_MASTER=${make_master:-$MAKE_MASTER}
 echo
 NEWRELIC_APPNAME=${NEWRELIC_APPNAME:-"P4 ${nro}"}
 read -p "NEWRELIC_APPNAME [${NEWRELIC_APPNAME}] " nr_appname
@@ -121,20 +144,14 @@ MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${nro_sanitised}"}
 read -p "MYSQL_USERNAME [${MYSQL_USERNAME}] " mysql_user
 MYSQL_USERNAME=${mysql_user:-$MYSQL_USERNAME}
 echo
-echo "---"
-echo
-MYSQL_PASSWORD=${MYSQL_PASSWORD:-$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${pw_length};echo;)}
+MYSQL_PASSWORD=${MYSQL_PASSWORD:-$(LC_ALL=C < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${pw_length};echo;)}
 read -p "MYSQL_PASSWORD [${MYSQL_PASSWORD}] " mysql_pass
 MYSQL_PASSWORD=${mysql_pass:-$MYSQL_PASSWORD}
-echo
-echo "---"
 echo
 echo "Google storage bucket locations: https://cloud.google.com/storage/docs/bucket-locations"
 STATELESS_BUCKET_LOCATION=${STATELESS_BUCKET_LOCATION:-us}
 read -p "STATELESS_BUCKET_LOCATION [${STATELESS_BUCKET_LOCATION}] " bucket_location
 STATELESS_BUCKET_LOCATION=${bucket_location:-$STATELESS_BUCKET_LOCATION}
-echo
-echo "---"
 echo
 dockerize --template "env.tmpl:secrets/env.${nro_sanitised}"
 cat secrets/env.${nro_sanitised}
@@ -142,30 +159,23 @@ echo
 echo "---"
 echo
 
-if [[ -f "secrets/service-account/${nro_sanitised}.json" ]]
+if [[ ! -f "secrets/service-accounts/${nro_sanitised}.json" ]]
 then
-  if command -v jq > /dev/null
+  bin/init_service_account.sh $nro_sanitised planet-4-151612
+fi
+
+if command -v jq > /dev/null
+then
+  echo "$(jq --version) validating: secrets/service-accounts/${nro_sanitised}.json"
+  if ! jq -e . <secrets/service-accounts/${nro_sanitised}.json
   then
-    echo "$(jq --version) validating: secrets/service-account/${nro_sanitised}.json"
-    if ! jq -e . <secrets/service-account/${nro_sanitised}.json
-    then
-      echo "ERROR reading: secrets/service-account/${nro_sanitised}.json"
-      echo "Failed to parse JSON, or got false/null"
-      echo
-      exit 1
-    fi
-  else
-    "Please install 'jq' to validate json files: https://stedolan.github.io/jq/download/"
+    echo "ERROR reading: secrets/service-accounts/${nro_sanitised}.json"
+    echo "Failed to parse JSON, or got false/null"
+    echo
+    exit 1
   fi
 else
-  echo "WARNING: File not found: secrets/service-account/${nro_sanitised}.json"
-  echo "Please ensure you have a GCP service account JSON file with the following permissions:"
-  echo " - SQL Client"
-  echo " - Storage Admin"
-  echo "For each GCP project in the deployment"
-  echo
-  echo "---"
-  echo
+  "Please install 'jq' to validate json files: https://stedolan.github.io/jq/download/"
 fi
 
 echo "Please confirm configuration looks good and then:"

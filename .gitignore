@@ -2,6 +2,7 @@ src/
 bucket/
 helper/
 NRO
+*.json
 
 \.DS_Store
 
