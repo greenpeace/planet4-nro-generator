@@ -41,6 +41,7 @@ job_environments:
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
 
+
 job_definitions:
   build_steps: &build_steps
     steps:
@@ -66,20 +67,7 @@ job_definitions:
       - checkout
       - attach_workspace:
           at: /tmp/workspace
-      - run: git-current-tag.sh | tee /tmp/workspace/var/old_release
-      - run: increment-version.sh $(cat /tmp/workspace/var/old_release) | tee /tmp/workspace/var/new_release
-      - run: release-start.sh $(cat /tmp/workspace/var/new_release) || git checkout release/$(cat /tmp/workspace/var/new_release)
-      - run: mv composer-local.json /tmp/workspace
-      - run: jq 'del(.require)' /tmp/workspace/composer-local.json > /tmp/workspace/composer-local-1.json
-      - run: jq ".version=\"$(cat /tmp/workspace/var/new_release)\"" /tmp/workspace/composer-local-1.json > composer-local.json
-      - run: composer validate composer-local.json
-      - run: git add .
-      - run:
-          name: git commit
-          command: |
-            git commit --allow-empty -m ":robot: Release $(cat /tmp/workspace/var/new_release)"
-      - run: git push origin --delete release/$(cat /tmp/workspace/var/old_release) || exit 0
-      - run: git push -u origin release/$(cat /tmp/workspace/var/new_release)
+      - run: release-prepare-nro.sh
       - run:
           name: Notify failure
           when: on_fail
@@ -91,12 +79,15 @@ job_definitions:
             - src
 
   notify_promote: &notify_promote
-    working_directory: /tmp/workspace/src
+    working_directory: ~/project
     steps:
-      - attach_workspace:
-          at: /tmp/workspace
       - checkout
-      - run: TYPE="@rawalker Promote release/$(cat /tmp/workspace/var/new_release)" notify-job-hold.sh
+      - run:
+          name: notify
+          command: |
+            TYPE="@rawalker Promote release/$(increment-version.sh "$(git-current-tag.sh)")" \
+            EXTRA_TEXT="Verify: https://$APP_HOSTNAME/$APP_HOSTPATH"
+            notify-job-hold.sh
 
   finish_release: &finish_release
     working_directory: /tmp/workspace/src
@@ -104,7 +95,8 @@ job_definitions:
       - attach_workspace:
           at: /tmp/workspace
       - checkout
-      - run: release-finish.sh $(cat /tmp/workspace/var/new_release)
+      - run: increment-version.sh "$(git-current-tag.sh)" | tee /tmp/workspace/var/new_release
+      - run: release-finish.sh
       - run: git push origin --delete release/$(cat /tmp/workspace/var/new_release)
       - run:
           name: Notify failure
