@@ -1,28 +1,53 @@
+version: 2
+
 defaults: &defaults
   docker:
     - image: gcr.io/planet-4-151612/p4-builder:{{ .Env.INFRA_VERSION }}
-  working_directory:  /home/circleci/
+  working_directory:  /home/circleci
 
-version: 2
+job_environments:
+  common_environment: &common_environment
+    CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+    APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
+  develop_environment: &develop_environment
+    APP_ENVIRONMENT: development
+    APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
+    CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
+    GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
+    HELM_NAMESPACE: develop
+    NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
+    WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
+    WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
+  release_environment: &release_environment
+    APP_ENVIRONMENT: staging
+    APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
+    CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+    GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
+    GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
+    HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+    HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
+    NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
+    WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
+    WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
+  production_environment: &production_environment
+    APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
+    CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
+    GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
+    GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
+    HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+    HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
+    MIN_REPLICA_COUNT: 2
+    NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
+    WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
+    WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
 
-jobs:
-  build-develop:
-    <<: *defaults
-    environment:
-      APP_ENVIRONMENT: development
-      APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
-      APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
-      GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
-      HELM_NAMESPACE: develop
-      TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
+job_definitions:
+  build_steps: &build_steps
     steps:
       - setup_remote_docker
       - run: activate-gcloud-account.sh
       - run: mkdir -p /tmp/workspace/var
+      - run: mkdir -p /tmp/workspace/src
       - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
       - run: make
       - run:
@@ -33,143 +58,141 @@ jobs:
           root: /tmp/workspace
           paths:
             - var
+            - src
 
-  deploy-develop:
-    <<: *defaults
-    environment:
-      APP_ENVIRONMENT: development
-      APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
-      APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
-      GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
-      HELM_NAMESPACE: develop
-      NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
+  prepare_release: &prepare_release
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: git-current-tag.sh | tee /tmp/workspace/var/old_release
+      - run: increment-version.sh $(cat /tmp/workspace/var/old_release) | tee /tmp/workspace/var/new_release
+      - run: release-start.sh $(cat /tmp/workspace/var/new_release) || git checkout release/$(cat /tmp/workspace/var/new_release)
+      - run: mv composer-local.json /tmp/workspace
+      - run: jq 'del(.require)' /tmp/workspace/composer-local.json > /tmp/workspace/composer-local-1.json
+      - run: jq ".version=\"$(cat /tmp/workspace/var/new_release)\"" /tmp/workspace/composer-local-1.json > composer-local.json
+      - run: composer validate composer-local.json
+      - run: git add .
+      - run:
+          name: git commit
+          command: |
+            git commit --allow-empty -m ":robot: Release $(cat /tmp/workspace/var/new_release)"
+      - run: git push origin --delete release/$(cat /tmp/workspace/var/old_release) || exit 0
+      - run: git push -u origin release/$(cat /tmp/workspace/var/new_release)
+      - run:
+          name: Notify failure
+          when: on_fail
+          command: TYPE="Prepare" notify-job-failure.sh
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - var
+            - src
+
+  notify_promote: &notify_promote
+    working_directory: /tmp/workspace/src
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - run: TYPE="@rawalker Promote release/$(cat /tmp/workspace/var/new_release)" notify-job-hold.sh
+
+  finish_release: &finish_release
+    working_directory: /tmp/workspace/src
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - run: release-finish.sh $(cat /tmp/workspace/var/new_release)
+      - run: git push origin --delete release/$(cat /tmp/workspace/var/new_release)
+      - run:
+          name: Notify failure
+          when: on_fail
+          command: TYPE="Promote" notify-job-failure.sh
+
+  deploy_steps: &deploy_steps
     steps:
       - attach_workspace:
           at: /tmp/workspace
       - run: activate-gcloud-account.sh
       - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
+
+jobs:
+  build-branch:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    <<: *build_steps
+
+  prepare-release:
+    <<: *defaults
+    <<: *prepare_release
+
+  notify-promote:
+    <<: *defaults
+    <<: *notify_promote
 
   build-release:
     <<: *defaults
     environment:
-      APP_ENVIRONMENT: staging
-      APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
-      APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
-      GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
-      TYPE: "Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
-    steps:
-      - setup_remote_docker
-      - run: activate-gcloud-account.sh
-      - run: mkdir -p /tmp/workspace/var
-      - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
-      - run: make
-      - run:
-          name: Notify failure
-          when: on_fail
-          command: TYPE="Build" notify-job-failure.sh
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - var
+      <<: *common_environment
+      <<: *release_environment
+    <<: *build_steps
 
-  deploy-release:
+  finish-release:
     <<: *defaults
-    environment:
-      APP_ENVIRONMENT: staging
-      APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
-      APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
-      GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
-      NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - run: activate-gcloud-account.sh
-      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
+    <<: *finish_release
 
   build-tag:
     <<: *defaults
     environment:
-      APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
-      APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
-      GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
-      TYPE: "Tagged Container Build - {{ .Env.CONTAINER_PREFIX}}-x"
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
-    steps:
-      - setup_remote_docker
-      - run: activate-gcloud-account.sh
-      - run: mkdir -p /tmp/workspace/var
-      - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
-      - run: make
-      - run:
-          name: Notify failure
-          when: on_fail
-          command: TYPE="Build" notify-job-failure.sh
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - var
+      <<: *common_environment
+      <<: *production_environment
+    <<: *build_steps
+
+  deploy-develop:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    <<: *deploy_steps
+
+  deploy-release:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *release_environment
+    <<: *deploy_steps
 
   deploy-tag:
     <<: *defaults
     environment:
-      APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
-      APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-      CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
-      CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
-      GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
-      GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
-      HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
-      HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
-      MIN_REPLICA_COUNT: 2
-      NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
-      WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
-      WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - run: activate-gcloud-account.sh
-      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
+      <<: *common_environment
+      <<: *production_environment
+    <<: *deploy_steps
 
 workflows:
   version: 2
   develop:
     jobs:
-    - build-develop:
+    - build-branch:
         context: org-global
         filters:
           branches:
             only: develop
-          tags:
-            ignore: /^v.*/
-
     - deploy-develop:
         context: org-global
         requires:
-          - build-develop
+          - build-branch
+        filters:
+          branches:
+            only: develop
+    - prepare-release:
+        context: org-global
+        requires:
+          - deploy-develop
         filters:
           branches:
             only: develop
@@ -181,9 +204,6 @@ workflows:
         filters:
           branches:
             only: /^release.*/
-          tags:
-            ignore: /^v.*/
-
     - deploy-release:
         context: org-global
         requires:
@@ -191,9 +211,28 @@ workflows:
         filters:
           branches:
             only: /^release.*/
-          tags:
-            ignore: /^v.*/
-
+    - notify-promote:
+        context: org-global
+        requires:
+          - deploy-release
+        filters:
+          branches:
+            only: /^release.*/
+    - hold-promote:
+        type: approval
+        requires:
+          - deploy-release
+        filters:
+          branches:
+            only: /^release.*/
+    - finish-release:
+        context: org-global
+        requires:
+          - hold-promote
+          - notify-promote
+        filters:
+          branches:
+            only: /^release.*/
   tag:
     jobs:
       - build-tag:
@@ -202,18 +241,16 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^v.*/
-
+              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
       - hold-tag:
           type: approval
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^v.*/
+              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
           requires:
             - build-tag
-
       - deploy-tag:
           context: org-global
           requires:
@@ -222,4 +259,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^v.*/
+              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/

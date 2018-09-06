@@ -28,7 +28,7 @@ DEFAULT_GOAL: all
 
 
 .PHONY: all
-all: test prompt init env deploy
+all: test prompt init env deploy done
 
 .PHONY: test
 test:
@@ -126,6 +126,11 @@ delete-service-account-yes-i-mean-it:
 	delete_service_account.sh
 
 ################################################################################
+
+.PHONY: done
+done:
+	@echo "@todo: Add user key for read/write operations"
+	@echo "Visit https://circleci.com/gh/greenpeace/$(CONTAINER_PREFIX)/edit#checkout"
 
 .PHONY: run
 run:
