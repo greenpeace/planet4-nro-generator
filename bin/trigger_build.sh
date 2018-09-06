@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
+
 
 eval "$(ssh-agent)"
 ssh-add "${HOME}/.ssh/id_rsa"
@@ -16,27 +16,30 @@ then
   ssh-add "${HOME}/.ssh/id_rsa"
 fi
 
-git clone -b develop "git@github.com:${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}.git"
+if [[ "${MAKE_DEVELOP,,}" = "true" ]]
+then
+  git clone -b develop "git@github.com:${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}.git"
 
-YEAR=$(date +%Y)
-export YEAR
+  YEAR=$(date +%Y)
+  export YEAR
 
-dockerize \
-  -template "templates/LICENSE.tmpl:${GITHUB_REPOSITORY_NAME}/LICENSE"
+  dockerize \
+    -template "templates/LICENSE.tmpl:${GITHUB_REPOSITORY_NAME}/LICENSE"
 
-pushd "${GITHUB_REPOSITORY_NAME}"  > /dev/null
+  pushd "${GITHUB_REPOSITORY_NAME}"  > /dev/null
 
-git add .
+  git add .
 
-git commit -m ":robot: Add license"
+  git commit -m ":robot: Add license"
 
-git push --set-upstream origin develop
+  git push --set-upstream origin develop
 
-git remote show origin
+  git remote show origin
 
-echo
-echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
-echo
+  echo
+  echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
+  echo
+fi
 
 if [[ "${MAKE_RELEASE,,}" != "true" ]]
 then

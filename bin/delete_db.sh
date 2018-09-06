@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
-
 ################################################################################
 
-CLOUDSQL_ENV=develop MYSQL_ROOT_PASSWORD=${MYSQL_DEVELOPMENT_ROOT_PASSWORD} delete_mysql_user_database.sh
+if [[ ${MAKE_DEVELOP,,} = "true" ]]
+then
+  CLOUDSQL_ENV=develop MYSQL_ROOT_PASSWORD=${MYSQL_DEVELOPMENT_ROOT_PASSWORD} delete_mysql_user_database.sh
+fi
 
 ################################################################################
 

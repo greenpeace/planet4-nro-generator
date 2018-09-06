@@ -2,7 +2,7 @@
 
 ## Requirements:
 
-1. GCP service account with 'Storage Admin' and 'SQL Client' permissions
+1. GCP service account key with 'Storage Admin' (roles/storage.admin) and 'SQL Client' permissions (roles/cloudsql.client)
 2. Valid Github SSH deploy key at `~/.ssh/id_rsa`
 3. Github OAUTH token
 
@@ -10,16 +10,11 @@
 
 ### Quickstart:
 
-First install:
-1.  `./configure.sh`
-1.  Populate the generated `secrets/common` file with required values and re-run `./configure.sh`
-1.  Copy service account JSON key to `secrets/service-account/${NRO}.json`
-1.  `make run`
+Where `${NRO}` is substituted for the NRO path, or shortname (eg: international for https://www.greenpeace.org/international):
 
-In subsequent runs the `secrets/common` file should not require changes, so the process is only:
-1. `./configure.sh`
-2. Copy service account JSON key to `secrets/service-account/${NRO}.json`
-3. `make run`
+1.  Copy service account JSON key to `secrets/service-accounts/${NRO}.json`
+1.  `./configure.sh`
+1.  `make run`
 
 ### Configure:
 
@@ -41,14 +36,14 @@ STATELESS_BUCKET_LOCATION | us                                  | https://cloud.
 
 #### Common secrets:
 
-Secret  | Default  | Description
---|---|--
-CIRCLE_TOKEN  |   |  CircleCI token: https://circleci.com/account/api
-GITHUB_OAUTH_TOKEN  |   |  Github personal access token: https://github.com/settings/tokens
-MYSQL_PRODUCTION_ROOT_USER  |   |  Production environment CloudSQL user with all privileges
-MYSQL_PRODUCTION_ROOT_PASSWORD  |   |  Production environment CloudSQL password
-MYSQL_DEVELOPMENT_ROOT_USER  |  |  Development environment CloudSQL user with all privileges
-MYSQL_DEVELOPMENT_ROOT_PASSWORD  |   |  Develop environment CloudSQL password
+Secret                          | Default | Description
+--------------------------------|---------|-----------------------------------------------------------------
+CIRCLE_TOKEN                    |         | CircleCI token: https://circleci.com/account/api
+GITHUB_OAUTH_TOKEN              |         | Github personal access token: https://github.com/settings/tokens
+MYSQL_PRODUCTION_ROOT_USER      |         | Production environment CloudSQL user with all privileges
+MYSQL_PRODUCTION_ROOT_PASSWORD  |         | Production environment CloudSQL password
+MYSQL_DEVELOPMENT_ROOT_USER     |         | Development environment CloudSQL user with all privileges
+MYSQL_DEVELOPMENT_ROOT_PASSWORD |         | Develop environment CloudSQL password
 
 ### Deploy
 

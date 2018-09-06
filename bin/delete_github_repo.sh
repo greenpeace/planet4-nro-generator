@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
-
-
-
 echo
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo
@@ -25,4 +21,9 @@ echo
 echo "Deleting github.com/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME} ..."
 echo
 
-curl -i -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X DELETE https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}
+if curl -i -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X DELETE https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}
+then
+  echo "Repository deleted"
+else
+  echo "ERROR: Failed to delete github repository. Continuing..."
+fi

@@ -1,20 +1,18 @@
 SHELL := /bin/bash
 
-NRO := $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
+NRO ?= $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 ifeq ($(strip $(NRO)),)
 $(error NRO name not set, please run ./configure.sh)
 endif
 
-ifeq ("$(wildcard secrets/service-account/$(NRO).json)","")
-$(error Service account file not found: secrets/service-account/$(NRO).json)
+ifeq ("$(wildcard secrets/service-accounts/$(NRO).json)","")
+$(error Service account file not found: secrets/service-accounts/$(NRO).json)
 endif
 
 include secrets/common
 export $(shell sed 's/=.*//' secrets/common)
 include secrets/env.$(NRO)
 export $(shell sed 's/=.*//' secrets/env.$(NRO))
-
-CONTINUE_ON_FAIL ?= false
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
@@ -24,19 +22,13 @@ RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
 endif
 
-################################################################################
-# Ensure these files exist, or that the keys are in environment
-
-WP_STATELESS_KEY        := $(shell cat secrets/service-account/$(NRO).json | openssl base64 -A)
-SQLPROXY_KEY            := $(WP_STATELESS_KEY)
-
 ###############################################################################
 
 DEFAULT_GOAL: all
 
 
 .PHONY: all
-all: test prompt init env deploy
+all: test prompt init env deploy done
 
 .PHONY: test
 test:
@@ -69,15 +61,11 @@ init-bucket:
 
 ################################################################################
 .PHONY: env
-env: env-stateless env-sqlproxy env-wp
+env: env-ci env-wp
 
-.PHONY: env-stateless
-env-stateless:
-	add_ci_env_var.sh WP_STATELESS_KEY "$(WP_STATELESS_KEY)"
-
-.PHONY: env-sqlproxy
-env-sqlproxy:
-	add_ci_env_var.sh SQLPROXY_KEY "$(SQLPROXY_KEY)"
+.PHONY: env-ci
+env-ci:
+	init_ci_secrets.sh
 
 .PHONY: env-wp
 env-wp:
@@ -86,14 +74,11 @@ env-wp:
 ################################################################################
 
 .PHONY: delete-yes-i-mean-it
-delete-yes-i-mean-it: delete-repo-yes-i-mean-it delete-project-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it
+delete-yes-i-mean-it:	delete-repo-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it
 
 .PHONY: delete-repo-yes-i-mean-it
 delete-repo-yes-i-mean-it:
 	delete_github_repo.sh
-
-.PHONY: delete-project-yes-i-mean-it
-delete-project-yes-i-mean-it:
 
 .PHONY: delete-db-yes-i-mean-it
 delete-db-yes-i-mean-it:
@@ -109,23 +94,50 @@ delete-bucket-yes-i-mean-it:
 deploy:
 	trigger_build.sh
 
+
+################################################################################
+
 .PHONY:
-post-install: helper post-install-nginx post-install
+post-install: helper post-install-nginx post-install-ga-login post-install-update-links
 
 helper:
 	git clone https://github.com/greenpeace/planet4-helper-scripts helper
 
+.PHONY: post-install-nginx
 post-install-nginx:
+	make -C helper nginx-helper
 
+.PHONY: post-install-ga-login
+post-install-ga-login:
+	make -C helper ga-login
+
+.PHONY: post-install-update-links
+post-install-update-links:
+	make -C helper update-links
+
+################################################################################
+
+.PHONY: init-service-account
+init-service-account:
+	init_service_account.sh
+
+.PHONY: delete-service-account-yes-i-mean-it
+delete-service-account-yes-i-mean-it:
+	delete_service_account.sh
+
+################################################################################
+
+.PHONY: done
+done:
+	@echo "@todo: Add user key for read/write operations"
+	@echo "Visit https://circleci.com/gh/greenpeace/$(CONTAINER_PREFIX)/edit#checkout"
 
 .PHONY: run
 run:
 	docker build -t p4-build .
-	CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL) \
 	docker run --rm -ti \
 		--name p4-nro-generator \
 		-e "NRO=$(NRO)" \
-		-e "CONTINUE_ON_FAIL=$(CONTINUE_ON_FAIL)" \
 		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
-		p4-build $(RUN_ARGS)
+		p4-build make $(RUN_ARGS)

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -eu
 
-[[ -f secrets/env ]] && source secrets/env
+
 
 # Authenticate with wp-stateless account to ensure we can pull from SQL bucket
-gcloud auth activate-service-account --key-file secrets/service-account/${NRO}.json
+gcloud auth activate-service-account --key-file secrets/service-accounts/${NRO}.json
 
 ##############################################################################
 

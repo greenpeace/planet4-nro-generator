@@ -1,13 +1,12 @@
 {
-	"name": "{{ .Env.GITHUB_REPOSITORY_NAME }}/{{ .Env.GITHUB_REPOSITORY_NAME }}",
-	"version": "0.0.1",
-
+	"name": "{{ .Env.CIRCLE_PROJECT_USERNAME }}/{{ .Env.GITHUB_REPOSITORY_NAME }}",
+	"description": "Greenpeace {{ .Env.NEWRELIC_APPNAME }}",
+	"license": "MIT",
 	"require": {
 		"greenpeace/planet4-child-theme" : "dev-develop",
 		"greenpeace/planet4-master-theme" : "dev-develop",
 		"greenpeace/planet4-plugin-blocks" : "dev-develop"
 	},
-
 	"scripts": {
 		"site:custom" : []
 	}

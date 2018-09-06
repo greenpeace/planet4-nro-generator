@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-[[ -f secrets/env ]] && source secrets/env
+
 
 add_ci_env_var.sh WP_DB_USERNAME "$(echo "${MYSQL_USERNAME}" | openssl base64 -e -A)" &
 add_ci_env_var.sh WP_DB_PASSWORD "$(echo "${MYSQL_PASSWORD}" | openssl base64 -e -A)" &
