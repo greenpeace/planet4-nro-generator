@@ -5,7 +5,7 @@ set -eu
 gcloud auth activate-service-account --key-file secrets/service-accounts/${NRO}.json
 
 ##############################################################################
-if [[ ${{MAKE_DEVELOP,,} = "true" ]]
+if [[ ${MAKE_DEVELOP,,} = "true" ]]
 then
   ENVIRONMENT="development" \
   BUCKET=${CONTAINER_PREFIX}-stateless-develop \
