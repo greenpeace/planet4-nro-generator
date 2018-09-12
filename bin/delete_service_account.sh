@@ -1,20 +1,35 @@
 #!/usr/bin/env bash
-set -e
+set -ux
 
-if [[ -z "$1" ]]
-then
-  echo "Usage:"
-  echo
-  echo " $(basename $0) <service-account-full-name>"
-  echo
-  exit 1
-fi
+nro=${1:-${NRO}}
+service_account_name=$nro@${GCP_DEVELOPMENT_PROJECT}.iam.gserviceaccount.com
 
-name=$1
-project=${2:-${GCLOUD_PROJECT_ID}}
+# Remove policy bindings from development
+gcloud projects remove-iam-policy-binding $GCP_DEVELOPMENT_PROJECT \
+  --member="serviceAccount:$service_account_name" \
+  --role roles/storage.admin
 
-gcloud config set project $project
+gcloud projects remove-iam-policy-binding $GCP_DEVELOPMENT_PROJECT \
+  --member="serviceAccount:$service_account_name" \
+  --role roles/cloudsql.client
 
-gcloud iam service-accounts delete $name@$project.iam.gserviceaccount.com
+# Remove policy bindings from production
+gcloud projects remove-iam-policy-binding $GCP_PRODUCTION_PROJECT \
+  --member="serviceAccount:$service_account_name" \
+  --role roles/storage.admin
+
+gcloud projects remove-iam-policy-binding $GCP_PRODUCTION_PROJECT \
+  --member="serviceAccount:$service_account_name" \
+  --role roles/cloudsql.client
+
+# Delete service account
+gcloud config set project $GCP_DEVELOPMENT_PROJECT
+
+gcloud iam service-accounts delete $service_account_name
 
 gcloud iam service-accounts list
+
+if [[ -f "secrets/service-accounts/$nro.json" ]]
+then
+ rm -f "secrets/service-accounts/$nro.json"
+fi

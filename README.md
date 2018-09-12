@@ -2,17 +2,19 @@
 
 ## Requirements:
 
-1. GCP service account key with 'Storage Admin' (roles/storage.admin) and 'SQL Client' permissions (roles/cloudsql.client)
-2. Valid Github SSH deploy key at `~/.ssh/id_rsa`
-3. Github OAUTH token
+1. [Github SSH deploy key](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) at `~/.ssh/id_rsa`
+1. [Github OAUTH token](https://github.com/settings/tokens)
+1. [CircleCI API token](https://circleci.com/account/api)
+1. [gcloud](https://cloud.google.com/sdk/gcloud/) installed in $PATH
+1. [dockerize](https://github.com/jwilder/dockerize/releases) installed in $PATH
+1. `make` installed in $PATH
 
 ## Deploying a New Planet4 CI Pipeline
 
 ### Quickstart:
 
-Where `${NRO}` is substituted for the NRO path, or shortname (eg: international for https://www.greenpeace.org/international):
+Where `${NRO}` is substituted for the NRO path, or slug ( eg: `international` for the site https://www.greenpeace.org/international/ ):
 
-1.  Copy service account JSON key to `secrets/service-accounts/${NRO}.json`
 1.  `./configure.sh`
 1.  `make run`
 

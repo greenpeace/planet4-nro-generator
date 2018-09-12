@@ -73,6 +73,12 @@ curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "
 # Extract URL to clone later
 clone_url=$(get_response_var .ssh_url)
 
+if [[ -z "$clone_url" ]] || [[ $clone_url = "null" ]]
+then
+  >&2 echo "WARNING: .ssh_url is '$clone_url', attempting to continue..."
+  exit 0
+fi
+
 # ============================================================================
 #
 # Add collaborator bot
