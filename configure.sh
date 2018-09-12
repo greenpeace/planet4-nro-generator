@@ -161,7 +161,9 @@ echo
 
 if [[ ! -f "secrets/service-accounts/${nro_sanitised}.json" ]]
 then
-  bin/init_service_account.sh $nro_sanitised planet-4-151612
+  GCP_DEVELOPMENT_PROJECT=${GCP_DEVELOPMENT_PROJECT:-planet-4-151612} \
+  GCP_PRODUCTION_PROJECT=${GCP_PRODUCTION_PROJECT:-planet4-production} \
+  bin/init_service_account.sh $nro_sanitised
 fi
 
 if command -v jq > /dev/null

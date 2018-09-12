@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -ux
 
 name=${1:-${NRO}}
 
@@ -12,28 +12,33 @@ then
 fi
 
 display_name="${2:-$name}"
-project=${3:-${GCLOUD_PROJECT_ID:-planet-4-151612}}
 
-service_account=$name@$project.iam.gserviceaccount.com
+service_account=$name@${GCP_DEVELOPMENT_PROJECT}.iam.gserviceaccount.com
 
 set -x
 
-gcloud config set project $project
+gcloud config set project ${GCP_DEVELOPMENT_PROJECT}
 
 gcloud iam service-accounts create $name --display-name "$display_name"
 
-gcloud iam service-accounts list
+gcloud iam service-accounts describe $service_account --format=json
 
-gcloud projects add-iam-policy-binding $project \
+gcloud projects add-iam-policy-binding ${GCP_DEVELOPMENT_PROJECT} \
   --member="serviceAccount:$service_account" \
   --role roles/storage.admin
 
-gcloud projects add-iam-policy-binding $project \
+gcloud projects add-iam-policy-binding ${GCP_DEVELOPMENT_PROJECT} \
   --member="serviceAccount:$service_account" \
   --role roles/cloudsql.client
 
-gcloud iam service-accounts describe $service_account --format=json
+gcloud projects add-iam-policy-binding ${GCP_PRODUCTION_PROJECT} \
+  --member="serviceAccount:$service_account" \
+  --role roles/storage.admin
+
+gcloud projects add-iam-policy-binding ${GCP_PRODUCTION_PROJECT} \
+  --member="serviceAccount:$service_account" \
+  --role roles/cloudsql.client
 
 gcloud iam service-accounts keys list --iam-account=$service_account --format=json
 
-bin/create_service_account_key.sh $name $project
+bin/create_service_account_key.sh $name ${GCP_DEVELOPMENT_PROJECT}
