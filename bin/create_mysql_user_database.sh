@@ -8,16 +8,18 @@ echo "---"
 echo
 echo "Creating ${CLOUDSQL_ENV} CloudSQL resources..."
 echo
-echo "Instance:  ${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}"
-echo
 if [[ ${CLOUDSQL_ENV} = "develop" ]]
 then
+  echo "Instance:  ${GCP_DEVELOPMENT_PROJECT}:${GCP_DEVELOPMENT_REGION}:${GCP_DEVELOPMENT_CLOUDSQL}"
+  echo
   rootUsername=${MYSQL_DEVELOPMENT_ROOT_USER}
   rootPassword=${MYSQL_DEVELOPMENT_ROOT_PASSWORD}
   # Start SQL proxy in background
   cloud_sql_proxy "-instances=${GCP_DEVELOPMENT_PROJECT}:${GCP_DEVELOPMENT_REGION}:${GCP_DEVELOPMENT_CLOUDSQL}=tcp:3306" \
                    -credential_file=secrets/service-accounts/${NRO}.json &
 else
+  echo "Instance:  ${GCP_PRODUCTION_PROJECT}:${GCP_PRODUCTION_REGION}:${GCP_PRODUCTION_CLOUDSQL}"
+  echo
   rootUsername=${MYSQL_PRODUCTION_ROOT_USER}
   rootPassword=${MYSQL_PRODUCTION_ROOT_PASSWORD}
   # Start SQL proxy in background
