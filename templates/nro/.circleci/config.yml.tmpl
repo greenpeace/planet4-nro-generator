@@ -9,9 +9,7 @@ job_environments:
   common_environment: &common_environment
     CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
     APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
-    WP_DB_NAME_DEVELOP: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
-    WP_DB_NAME_RELEASE: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
-    WP_DB_NAME_MASTER: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
+    WP_DB_NAME_PREFIX: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}
   develop_environment: &develop_environment
     APP_ENVIRONMENT: development
     APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
