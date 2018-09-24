@@ -165,6 +165,59 @@ jobs:
       <<: *production_environment
     <<: *deploy_steps
 
+  create-sync-sql:
+    <<: *defaults
+    environment:
+       <<: *common_environment
+       <<: *production_environment
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run:
+          name: Configure
+          command: |
+            ${HOME}/scripts/activate-gcloud-account.sh
+      - run: echo $SQLPROXY_KEY | base64 -d > key.json
+      - run: /home/circleci/sql_create_sync_file.sh
+
+
+  sync-sql-to-release:
+    <<: *defaults
+    environment:
+       <<: *common_environment
+       <<: *release_environment
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Configure
+          command: |
+            ${HOME}/scripts/activate-gcloud-account.sh
+      - run: echo $SQLPROXY_KEY | base64 -d > key.json
+      - run: /home/circleci/sql_to_sync_site.sh release
+
+  sync-sql-to-develop:
+    <<: *defaults
+    environment:
+       <<: *common_environment
+       <<: *develop_environment
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Configure
+          command: |
+            ${HOME}/scripts/activate-gcloud-account.sh
+      - run: echo $SQLPROXY_KEY | base64 -d > key.json
+      - run: /home/circleci/sql_to_sync_site.sh develop
+
 workflows:
   version: 2
   develop:
@@ -252,3 +305,30 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+  create-sync-sql:
+    jobs:
+    - create-sync-sql:
+        context: org-global
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /sync.*/
+    - sync-sql-to-release:
+        context: org-global
+        requires:
+          - create-sync-sql
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /sync.*/
+    - sync-sql-to-develop:
+        context: org-global
+        requires:
+          - sync-sql-to-release
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /sync.*/
