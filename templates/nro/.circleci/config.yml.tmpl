@@ -86,6 +86,8 @@ job_definitions:
           name: notify
           command: |
             TYPE="@rawalker Promote release/$(increment-version.sh "$(git-current-tag.sh)")" \
+            EXTRA_TEXT="Verify: https://$APP_HOSTNAME/$APP_HOSTPATH" \
+            notify-job-hold.sh
 
   notify_hold: &notify_hold
     working_directory: ~/project
@@ -134,6 +136,8 @@ jobs:
   notify-promote:
     <<: *defaults
     <<: *notify_promote
+    environment:
+      <<: *release_environment
 
   build-release:
     <<: *defaults
