@@ -9,12 +9,15 @@ job_environments:
   common_environment: &common_environment
     CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
     APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
+    WP_DB_NAME_PREFIX: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}
   develop_environment: &develop_environment
     APP_ENVIRONMENT: development
     APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
     CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
     GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
+    GCLOUD_CLUSTER: p4-development
     HELM_NAMESPACE: develop
+    HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
