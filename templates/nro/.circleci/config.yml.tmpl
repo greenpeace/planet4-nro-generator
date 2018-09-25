@@ -185,6 +185,7 @@ jobs:
       <<: *production_environment
     <<: *deploy_steps
 
+
   create-sync-sql:
     <<: *defaults
     environment:
@@ -238,117 +239,96 @@ jobs:
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_to_sync_site.sh develop
 
+workflow_definitions:
+  develop_common: &develop_common
+    context: org-global
+    filters:
+      branches:
+        only: develop
+  release_common: &release_common
+    context: org-global
+    filters:
+      branches:
+        only: /^release.*/
+  tag_common: &tag_common
+    context: org-global
+    filters:
+      branches:
+        ignore: /.*/
+      tags:
+        only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+  sync_common: &sync_common
+    context: org-global
+    filters:
+      branches:
+        ignore: /.*/
+      tags:
+        only: /sync.*/
+
 workflows:
   version: 2
   develop:
     jobs:
     - build-branch:
-        context: org-global
-        filters:
-          branches:
-            only: develop
+        <<: *develop_common
     - deploy-develop:
-        context: org-global
+        <<: *develop_common
         requires:
           - build-branch
-        filters:
-          branches:
-            only: develop
     - prepare-release:
-        context: org-global
+        <<: *develop_common
         requires:
           - deploy-develop
-        filters:
-          branches:
-            only: develop
 
   release:
     jobs:
     - build-release:
-        context: org-global
-        filters:
-          branches:
-            only: /^release.*/
+        <<: *release_common
     - deploy-release:
-        context: org-global
+        <<: *release_common
         requires:
           - build-release
-        filters:
-          branches:
-            only: /^release.*/
     - notify-promote:
-        context: org-global
+        <<: *release_common
         requires:
           - deploy-release
-        filters:
-          branches:
-            only: /^release.*/
     - hold-promote:
+        <<: *release_common
         type: approval
         requires:
           - deploy-release
-        filters:
-          branches:
-            only: /^release.*/
     - finish-release:
-        context: org-global
+        <<: *release_common
         requires:
           - hold-promote
           - notify-promote
-        filters:
-          branches:
-            only: /^release.*/
   tag:
     jobs:
       - build-tag:
-          context: org-global
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+          <<: *tag_common
       - hold-tag:
+          <<: *tag_common
           type: approval
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+          requires:
+            - build-tag
+      - notify-hold:
+          <<: *tag_common
           requires:
             - build-tag
       - deploy-tag:
-          context: org-global
+          <<: *tag_common
           requires:
             - hold-tag
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+
   create-sync-sql:
     jobs:
     - create-sync-sql:
-        context: org-global
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /sync.*/
+        <<: *sync_common
     - sync-sql-to-release:
-        context: org-global
+        <<: *sync_common
         requires:
           - create-sync-sql
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /sync.*/
     - sync-sql-to-develop:
-        context: org-global
+        <<: *sync_common
         requires:
           - sync-sql-to-release
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /sync.*/
