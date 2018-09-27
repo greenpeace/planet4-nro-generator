@@ -117,6 +117,7 @@ job_definitions:
           when: on_fail
           command: TYPE="Promote" notify-job-failure.sh
 
+
   deploy_steps: &deploy_steps
     steps:
       - attach_workspace:
@@ -140,6 +141,7 @@ jobs:
     <<: *defaults
     <<: *notify_promote
     environment:
+      <<: *common_environment
       <<: *release_environment
 
   build-release:
