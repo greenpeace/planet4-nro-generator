@@ -99,7 +99,7 @@ job_definitions:
       - run:
           name: notify
           command: |
-            TYPE="@rawalker Hold: $(increment-version.sh "$(git-current-tag.sh)")" \
+            TYPE="@rawalker Hold: ${CIRCLE_TAG}" \
             EXTRA_TEXT="Verify: https://$APP_HOSTNAME/$APP_HOSTPATH" \
             notify-job-hold.sh
 
