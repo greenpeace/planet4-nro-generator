@@ -140,7 +140,7 @@ NEWRELIC_APPNAME=${nr_appname:-$NEWRELIC_APPNAME}
 echo
 echo "---"
 echo
-MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${nro_sanitised}"}
+MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${nro_sanitised:0:8}"}
 read -p "MYSQL_USERNAME [${MYSQL_USERNAME}] " mysql_user
 MYSQL_USERNAME=${mysql_user:-$MYSQL_USERNAME}
 echo
