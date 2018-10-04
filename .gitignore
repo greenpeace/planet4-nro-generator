@@ -2,6 +2,7 @@ src/
 bucket/
 helper/
 NRO
+SERVICE_ACCOUNT_NAME
 *.json
 
 \.DS_Store
