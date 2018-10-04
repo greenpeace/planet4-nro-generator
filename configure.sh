@@ -159,19 +159,31 @@ echo
 echo "---"
 echo
 
-if [[ ! -f "secrets/service-accounts/${nro_sanitised}.json" ]]
+service_account_name=$nro_sanitised
+
+# Google Service Account names cannot be less than 6 characters
+if [[ ${#service_account_name} -lt 6 ]]
+then
+  # So append -p4 to the end of the name
+  service_account_name=${nro_sanitised}-p4
+fi
+
+echo "Service account name: ${service_account_name}"
+echo $service_account_name > SERVICE_ACCOUNT_NAME
+
+if [[ ! -f "secrets/service-accounts/${service_account_name}.json" ]]
 then
   GCP_DEVELOPMENT_PROJECT=${GCP_DEVELOPMENT_PROJECT:-planet-4-151612} \
   GCP_PRODUCTION_PROJECT=${GCP_PRODUCTION_PROJECT:-planet4-production} \
-  bin/init_service_account.sh $nro_sanitised
+  bin/init_service_account.sh "$service_account_name" "$nro"
 fi
 
 if command -v jq > /dev/null
 then
-  echo "$(jq --version) validating: secrets/service-accounts/${nro_sanitised}.json"
-  if ! jq -e . <secrets/service-accounts/${nro_sanitised}.json
+  echo "$(jq --version) validating: secrets/service-accounts/${service_account_name}.json"
+  if ! jq -e . <secrets/service-accounts/${service_account_name}.json
   then
-    echo "ERROR reading: secrets/service-accounts/${nro_sanitised}.json"
+    echo "ERROR reading: secrets/service-accounts/${service_account_name}.json"
     echo "Failed to parse JSON, or got false/null"
     echo
     exit 1

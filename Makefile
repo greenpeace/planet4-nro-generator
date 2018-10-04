@@ -5,8 +5,10 @@ ifeq ($(strip $(NRO)),)
 $(error NRO name not set, please run ./configure.sh)
 endif
 
-ifeq ("$(wildcard secrets/service-accounts/$(NRO).json)","")
-$(error Service account file not found: secrets/service-accounts/$(NRO).json)
+SERVICE_ACCOUNT_NAME ?= $(shell cat SERVICE_ACCOUNT_NAME)
+
+ifeq ("$(wildcard secrets/service-accounts/$(SERVICE_ACCOUNT_NAME).json)","")
+$(error Service account file not found: secrets/service-accounts/$(SERVICE_ACCOUNT_NAME).json)
 endif
 
 include secrets/common
@@ -138,6 +140,7 @@ run:
 	docker run --rm -ti \
 		--name p4-nro-generator \
 		-e "NRO=$(NRO)" \
+		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
 		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
 		p4-build make $(RUN_ARGS)
