@@ -9,12 +9,15 @@ job_environments:
   common_environment: &common_environment
     CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
     APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
+    WP_DB_NAME_PREFIX: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}
   develop_environment: &develop_environment
     APP_ENVIRONMENT: development
     APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
     CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
     GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
+    GCLOUD_CLUSTER: p4-development
     HELM_NAMESPACE: develop
+    HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
@@ -86,7 +89,18 @@ job_definitions:
           name: notify
           command: |
             TYPE="@rawalker Promote release/$(increment-version.sh "$(git-current-tag.sh)")" \
-            EXTRA_TEXT="Verify: https://$APP_HOSTNAME/$APP_HOSTPATH"
+            EXTRA_TEXT="Verify: https://$APP_HOSTNAME/$APP_HOSTPATH" \
+            notify-job-hold.sh
+
+  notify_hold: &notify_hold
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run:
+          name: notify
+          command: |
+            TYPE="@rawalker Hold: ${CIRCLE_TAG}" \
+            EXTRA_TEXT="Verify: https://$APP_HOSTNAME/$APP_HOSTPATH" \
             notify-job-hold.sh
 
   finish_release: &finish_release
@@ -102,6 +116,7 @@ job_definitions:
           name: Notify failure
           when: on_fail
           command: TYPE="Promote" notify-job-failure.sh
+
 
   deploy_steps: &deploy_steps
     steps:
@@ -125,6 +140,9 @@ jobs:
   notify-promote:
     <<: *defaults
     <<: *notify_promote
+    environment:
+      <<: *common_environment
+      <<: *release_environment
 
   build-release:
     <<: *defaults
@@ -143,6 +161,13 @@ jobs:
       <<: *common_environment
       <<: *production_environment
     <<: *build_steps
+
+  notify-hold:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *production_environment
+    <<: *notify_hold
 
   deploy-develop:
     <<: *defaults
@@ -164,6 +189,7 @@ jobs:
       <<: *common_environment
       <<: *production_environment
     <<: *deploy_steps
+
 
   create-sync-sql:
     <<: *defaults
@@ -218,117 +244,96 @@ jobs:
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_to_sync_site.sh develop
 
+workflow_definitions:
+  develop_common: &develop_common
+    context: org-global
+    filters:
+      branches:
+        only: develop
+  release_common: &release_common
+    context: org-global
+    filters:
+      branches:
+        only: /^release.*/
+  tag_common: &tag_common
+    context: org-global
+    filters:
+      branches:
+        ignore: /.*/
+      tags:
+        only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+  sync_common: &sync_common
+    context: org-global
+    filters:
+      branches:
+        ignore: /.*/
+      tags:
+        only: /sync.*/
+
 workflows:
   version: 2
   develop:
     jobs:
     - build-branch:
-        context: org-global
-        filters:
-          branches:
-            only: develop
+        <<: *develop_common
     - deploy-develop:
-        context: org-global
+        <<: *develop_common
         requires:
           - build-branch
-        filters:
-          branches:
-            only: develop
     - prepare-release:
-        context: org-global
+        <<: *develop_common
         requires:
           - deploy-develop
-        filters:
-          branches:
-            only: develop
 
   release:
     jobs:
     - build-release:
-        context: org-global
-        filters:
-          branches:
-            only: /^release.*/
+        <<: *release_common
     - deploy-release:
-        context: org-global
+        <<: *release_common
         requires:
           - build-release
-        filters:
-          branches:
-            only: /^release.*/
     - notify-promote:
-        context: org-global
+        <<: *release_common
         requires:
           - deploy-release
-        filters:
-          branches:
-            only: /^release.*/
     - hold-promote:
+        <<: *release_common
         type: approval
         requires:
           - deploy-release
-        filters:
-          branches:
-            only: /^release.*/
     - finish-release:
-        context: org-global
+        <<: *release_common
         requires:
           - hold-promote
           - notify-promote
-        filters:
-          branches:
-            only: /^release.*/
   tag:
     jobs:
       - build-tag:
-          context: org-global
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+          <<: *tag_common
       - hold-tag:
+          <<: *tag_common
           type: approval
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+          requires:
+            - build-tag
+      - notify-hold:
+          <<: *tag_common
           requires:
             - build-tag
       - deploy-tag:
-          context: org-global
+          <<: *tag_common
           requires:
             - hold-tag
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\p{Digit}+\.\p{Digit}+\.\p{Digit}+.*/
+
   create-sync-sql:
     jobs:
     - create-sync-sql:
-        context: org-global
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /sync.*/
+        <<: *sync_common
     - sync-sql-to-release:
-        context: org-global
+        <<: *sync_common
         requires:
           - create-sync-sql
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /sync.*/
     - sync-sql-to-develop:
-        context: org-global
+        <<: *sync_common
         requires:
           - sync-sql-to-release
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /sync.*/
