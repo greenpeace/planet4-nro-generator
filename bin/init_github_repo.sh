@@ -93,6 +93,24 @@ echo "Add github machine user as 'admin' collaborator: ${GITHUB_MACHINE_USER}"
 echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
 
+
+# ============================================================================
+#
+# Add collaborator team "Planet 4 Developers" (We know the ID is: 2496903)
+#
+endpoint="https://api.github.com/teams/2496903/repos/greenpeace/${GITHUB_REPOSITORY_NAME}"
+json='{"permission":"push"}'
+
+echo
+echo "---------"
+echo
+echo "Adding the team "Planet 4 Developers" as collaborators of the repository
+echo
+curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
+
+
+
+
 # ============================================================================
 #
 # Clone new repository and prepare initial content
