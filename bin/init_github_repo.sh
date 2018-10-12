@@ -150,6 +150,8 @@ echo
 echo "Staging files ..."
 git add .
 
+git diff-index --quiet "$(git write-tree)" -- && echo "Nothing to commit..." && exit 0
+
 echo
 echo "---------"
 echo
