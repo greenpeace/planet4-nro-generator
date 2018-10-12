@@ -105,7 +105,7 @@ json='{"permission":"push"}'
 echo
 echo "---------"
 echo
-echo "Adding the team 'Planet 4 Developers' as collaborators of the repository"
+echo "Adding the team 'Planet 4 Developers' as 'write' collaborator"
 echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
 
