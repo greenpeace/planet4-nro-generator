@@ -28,12 +28,11 @@ CONTAINER_PREFIX          | `planet4-${NRO}`                    | Prefix to name
 GITHUB_REPOSITORY_NAME    | `planet4-${NRO}`                    | GitHub repository name, eg: `planet4-international`
 GITHUB_SSH_KEY          | `${HOME}/.ssh/id_rsa`                         | Path to GitHub SSH key
 GITHUB_USER_EMAIL         | `$(git config --global user.email)` | Github email
-GITHUB_USER_EMAIL         | `$(git config --global user.name)`  | Github username
+GITHUB_USER_NAME         | `$(git config --global user.name)`  | Github username
 MAKE_MASTER               | true                                | Creates production environment resources
 MAKE_RELEASE              | true                                | Creates release environment resources
-NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring
-MYSQL_USERNAME            | `planet4-${NRO}`                    | CloudSQL username (will be created)
 MYSQL_PASSWORD            | `(generated)`                       | CloudSQL password
+MYSQL_USERNAME            | `planet4-${NRO}`                    | CloudSQL username (will be created)
 NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring
 STATELESS_BUCKET_LOCATION | us                                  | https://cloud.google.com/storage/docs/bucket-locations#available_locations
 
