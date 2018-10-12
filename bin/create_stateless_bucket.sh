@@ -35,11 +35,11 @@ okay=0
 i=0
 retry=3
 
-while ! $okay
+while [[ $okay -ne 1 ]]
 do
   init_bucket
 
-  [[ $okay ]] && exit
+  [[ $okay -eq 1 ]] && exit
 
   i=$(($i+1))
   [[ $i -gt $retry ]] && break
