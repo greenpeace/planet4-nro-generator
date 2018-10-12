@@ -123,7 +123,7 @@ git clone "$clone_url" src
 
 pushd src
 
-git checkout -b develop
+git checkout -b develop || git checkout develop
 echo
 echo "---------"
 echo
