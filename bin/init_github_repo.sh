@@ -76,7 +76,6 @@ clone_url=$(get_response_var .ssh_url)
 if [[ -z "$clone_url" ]] || [[ $clone_url = "null" ]]
 then
   >&2 echo "WARNING: .ssh_url is '$clone_url', attempting to continue..."
-  exit 0
 fi
 
 # ============================================================================
