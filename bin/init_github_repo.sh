@@ -76,6 +76,8 @@ clone_url=$(get_response_var .ssh_url)
 if [[ -z "$clone_url" ]] || [[ $clone_url = "null" ]]
 then
   >&2 echo "WARNING: .ssh_url is '$clone_url', attempting to continue..."
+  curl_string https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}
+  clone_url=$(get_response_var .ssh_url)
 fi
 
 # ============================================================================
