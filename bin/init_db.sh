@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -exuo pipefail
+set -euo pipefail
 
 # Authenticate with wp-stateless account to ensure we can pull from SQL bucket
 gcloud auth activate-service-account --key-file secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json
