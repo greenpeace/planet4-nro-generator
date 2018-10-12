@@ -8,6 +8,8 @@ gcloud auth activate-service-account --key-file secrets/service-accounts/${SERVI
 
 gsutil cp "gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz" . && gunzip -k -f "${SOURCE_CONTENT_SQLDUMP}.gz"
 
+sync
+
 ################################################################################
 
 if [[ ${MAKE_DEVELOP,,} = "true" ]]
