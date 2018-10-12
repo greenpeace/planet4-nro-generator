@@ -26,6 +26,7 @@ Variable                  | Default                             | Description
 APP_HOSTPATH              |                                     | URL stub, eg: `/international`
 CONTAINER_PREFIX          | `planet4-${NRO}`                    | Prefix to name containers in the Helm release
 GITHUB_REPOSITORY_NAME    | `planet4-${NRO}`                    | GitHub repository name, eg: `planet4-international`
+GITHUB_SSH_KEY          | `${HOME}/.ssh/id_rsa`                         | Path to GitHub SSH key
 GITHUB_USER_EMAIL         | `$(git config --global user.email)` | Github email
 GITHUB_USER_EMAIL         | `$(git config --global user.name)`  | Github username
 MAKE_MASTER               | true                                | Creates production environment resources
