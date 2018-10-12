@@ -1,5 +1,7 @@
 SHELL := /bin/bash
 
+GITHUB_SSH_KEY ?= $(HOME)/.ssh/id_rsa
+
 NRO ?= $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 ifeq ($(strip $(NRO)),)
 $(error NRO name not set, please run ./configure.sh)
@@ -133,6 +135,7 @@ delete-service-account-yes-i-mean-it:
 done:
 	@echo "@todo: Add user key for read/write operations"
 	@echo "Visit https://circleci.com/gh/greenpeace/$(CONTAINER_PREFIX)/edit#checkout"
+	@echo
 
 .PHONY: run
 run:
@@ -141,6 +144,6 @@ run:
 		--name p4-nro-generator \
 		-e "NRO=$(NRO)" \
 		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
-		-v "$(HOME)/.ssh/id_rsa:/root/.ssh/id_rsa" \
+		-v "$(GITHUB_SSH_KEY):/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
 		p4-build make $(RUN_ARGS)
