@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-set -eu
-
-
+set -exuo pipefail
 
 # Authenticate with wp-stateless account to ensure we can pull from SQL bucket
 gcloud auth activate-service-account --key-file secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json
 
-gsutil cp "gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz" . && gunzip -k -f "${SOURCE_CONTENT_SQLDUMP}.gz"
-
+gsutil cp "gs://${SOURCE_CONTENT_BUCKET}/${SOURCE_CONTENT_SQLDUMP}.gz"
+gunzip -k -f "${SOURCE_CONTENT_SQLDUMP}.gz"
 sync
 
 ################################################################################
