@@ -76,7 +76,8 @@ clone_url=$(get_response_var .ssh_url)
 if [[ -z "$clone_url" ]] || [[ $clone_url = "null" ]]
 then
   >&2 echo "WARNING: .ssh_url is '$clone_url', attempting to continue..."
-  exit 0
+  curl_string https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}
+  clone_url=$(get_response_var .ssh_url)
 fi
 
 # ============================================================================
@@ -104,11 +105,9 @@ json='{"permission":"push"}'
 echo
 echo "---------"
 echo
-echo "Adding the team "Planet 4 Developers" as collaborators of the repository
+echo "Adding the team 'Planet 4 Developers' as 'write' collaborator"
 echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
-
-
 
 
 # ============================================================================
@@ -124,7 +123,7 @@ git clone "$clone_url" src
 
 pushd src
 
-git checkout -b develop
+git checkout -b develop || git checkout develop
 echo
 echo "---------"
 echo
@@ -150,6 +149,8 @@ echo "---------"
 echo
 echo "Staging files ..."
 git add .
+
+git diff-index --quiet "$(git write-tree)" -- && echo "Nothing to commit..." && exit 0
 
 echo
 echo "---------"

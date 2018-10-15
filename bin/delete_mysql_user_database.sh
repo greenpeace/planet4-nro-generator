@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
-if [[ ! -f "secrets/service-accounts/${NRO}.json" ]]
+if [[ ! -f "secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json" ]]
 then
-  echo "ERROR: file not found secrets/service-accounts/${NRO}.json"
+  echo "ERROR: file not found secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json"
   exit 1
 fi
 
@@ -49,7 +49,7 @@ fi
 
 # Start SQL proxy in background
 cloud_sql_proxy "-instances=${instanceName}=tcp:3306" \
-                 -credential_file=secrets/service-accounts/${NRO}.json &
+                 -credential_file=secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json &
 
 # Generate files from template, and wait until TCP port is open
 MYSQL_DATABASE=${db} \
