@@ -153,7 +153,11 @@ git add .
 echo "---------"
 echo
 echo "Commit ..."
-git commit -m ":robot: init" || echo "Nothing to do..." && exit 0
+if ! git commit -m ":robot: init"
+then
+  echo "Nothing to do..."
+  exit 0
+fi
 
 # ============================================================================
 #
