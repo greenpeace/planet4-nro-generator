@@ -150,13 +150,14 @@ echo
 echo "Staging files ..."
 git add .
 
-git diff-index --quiet "$(git write-tree)" -- && echo "Nothing to commit..." && exit 0
-
-echo
 echo "---------"
 echo
 echo "Commit ..."
-git commit -m ":robot: init"
+if ! git commit -m ":robot: init"
+then
+  echo "Nothing to do..."
+  exit 0
+fi
 
 # ============================================================================
 #
