@@ -26,6 +26,14 @@ RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
 endif
 
+# If the first argument is "run-circleci"...
+ifeq (run-circleci,$(firstword $(MAKECMDGOALS)))
+# use the rest as arguments for "run"
+RUN_CIRCLECI_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+# ...and turn them into do-nothing targets
+$(eval $(RUN_CIRCLECI_ARGS):;@:)
+endif
+
 ###############################################################################
 
 DEFAULT_GOAL: all
@@ -147,3 +155,12 @@ run:
 		-v "$(GITHUB_SSH_KEY):/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
 		p4-build make $(RUN_ARGS)
+
+.PHONY: run-circleci
+run-circleci:
+	docker build -t p4-build .
+	docker run --rm -i \
+		--name p4-nro-generator \
+		-e "NRO=$(NRO)" \
+		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
+		p4-build make $(RUN_CIRCLECI_ARGS)
