@@ -36,115 +36,6 @@ endif
 
 ###############################################################################
 
-DEFAULT_GOAL: all
-
-
-.PHONY: all
-all: test prompt init env deploy done
-
-.PHONY: test
-test:
-	env | sort
-
-.PHONY: prompt
-prompt:
-	@prompt.sh
-
-################################################################################
-
-.PHONY: init
-init: init-repo init-project init-db init-bucket
-
-.PHONY: init-repo
-init-repo:
-	init_github_repo.sh
-
-.PHONY: init-project
-init-project:
-	init_circle_project.sh
-
-.PHONY: init-db
-init-db:
-	init_db.sh
-
-.PHONY: init-bucket
-init-bucket:
-	init_bucket.sh
-
-################################################################################
-.PHONY: env
-env: env-ci env-wp
-
-.PHONY: env-ci
-env-ci:
-	init_ci_secrets.sh
-
-.PHONY: env-wp
-env-wp:
-	init_wp_environment.sh
-
-################################################################################
-
-.PHONY: delete-yes-i-mean-it
-delete-yes-i-mean-it:	delete-repo-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it
-
-.PHONY: delete-repo-yes-i-mean-it
-delete-repo-yes-i-mean-it:
-	delete_github_repo.sh
-
-.PHONY: delete-db-yes-i-mean-it
-delete-db-yes-i-mean-it:
-	delete_db.sh
-
-.PHONY: delete-bucket-yes-i-mean-it
-delete-bucket-yes-i-mean-it:
-	delete_bucket.sh
-
-################################################################################
-
-.PHONY: deploy
-deploy:
-	trigger_build.sh
-
-
-################################################################################
-
-.PHONY:
-post-install: helper post-install-nginx post-install-ga-login post-install-update-links
-
-helper:
-	git clone https://github.com/greenpeace/planet4-helper-scripts helper
-
-.PHONY: post-install-nginx
-post-install-nginx:
-	make -C helper nginx-helper
-
-.PHONY: post-install-ga-login
-post-install-ga-login:
-	make -C helper ga-login
-
-.PHONY: post-install-update-links
-post-install-update-links:
-	make -C helper update-links
-
-################################################################################
-
-.PHONY: init-service-account
-init-service-account:
-	init_service_account.sh
-
-.PHONY: delete-service-account-yes-i-mean-it
-delete-service-account-yes-i-mean-it:
-	delete_service_account.sh
-
-################################################################################
-
-.PHONY: done
-done:
-	@echo "@todo: Add user key for read/write operations"
-	@echo "Visit https://circleci.com/gh/greenpeace/$(CONTAINER_PREFIX)/edit#checkout"
-	@echo
-
 .PHONY: run
 run:
 	docker build -t p4-build .
@@ -154,7 +45,7 @@ run:
 		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
 		-v "$(GITHUB_SSH_KEY):/root/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
-		p4-build make $(RUN_ARGS)
+		p4-build make -f Makefile-run $(RUN_ARGS)
 
 .PHONY: run-circleci
 run-circleci:
@@ -163,4 +54,4 @@ run-circleci:
 		--name p4-nro-generator \
 		-e "NRO=$(NRO)" \
 		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
-		p4-build make $(RUN_CIRCLECI_ARGS)
+		p4-build make -f Makefile-run $(RUN_CIRCLECI_ARGS)
