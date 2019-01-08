@@ -102,9 +102,9 @@ fi
 echo
 echo "---"
 echo
-APP_HOSTPATH=${APP_HOSTPATH:-$nro_sanitised}
+APP_HOSTPATH=${APP_HOSTPATH-$nro_sanitised}
 read -p "APP_HOSTPATH [${APP_HOSTPATH}] " app_hostpath
-APP_HOSTPATH=${app_hostpath:-$APP_HOSTPATH}
+APP_HOSTPATH=${app_hostpath-$APP_HOSTPATH}
 echo
 GITHUB_REPOSITORY_NAME=${GITHUB_REPOSITORY_NAME:-planet4-${nro_sanitised}}
 read -p "GITHUB_REPOSITORY_NAME [${GITHUB_REPOSITORY_NAME}] " repo_name
