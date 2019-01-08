@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 
-
-
-# ============================================================================
-#
-# SANITY CHECKS
-
-# Every site requires a non-blank APP_HOSTPATH
-
-[[ -z "${APP_HOSTPATH:-}" ]] && >&2 echo -e "Error: APP_HOSTPATH is not set.\nUsage: APP_HOSTPATH=international make" && exit 1
-
 # ============================================================================
 
 git config --global user.email "${GITHUB_USER_EMAIL}"
