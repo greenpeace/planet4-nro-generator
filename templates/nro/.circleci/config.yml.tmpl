@@ -27,7 +27,11 @@ job_environments:
     CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
     GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
     GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
+    {{- if .Env.APP_HOSTPATH }}
     HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+    {{- else }}
+    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}
+    {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
@@ -39,7 +43,11 @@ job_environments:
     CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
     GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
     GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
+    {{- if .Env.APP_HOSTPATH }}
     HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+    {{- else }}
+    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}
+    {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
     MIN_REPLICA_COUNT: 2
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
