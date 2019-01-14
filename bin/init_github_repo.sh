@@ -134,9 +134,16 @@ echo "---------"
 echo
 echo "Creating files from template ..."
 
-dockerize \
-  -template .circleci/config.yml.tmpl:.circleci/config.yml \
-  -template composer-local.json.tmpl:composer-local.json
+if [ ${MAKE_DEVELOP,,} = "true" -a ${MAKE_RELEASE,,} = "false" -a ${MAKE_MASTER,,} = "false" ]
+then
+  dockerize \
+    -template .circleci/config.yml-devonly.tmpl:.circleci/config.yml \
+    -template composer-local.json.tmpl:composer-local.json
+else
+  dockerize \
+    -template .circleci/config.yml.tmpl:.circleci/config.yml \
+    -template composer-local.json.tmpl:composer-local.json
+fi
 
 echo
 echo "---------"

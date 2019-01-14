@@ -1,0 +1,93 @@
+version: 2
+
+defaults: &defaults
+  docker:
+    - image: gcr.io/planet-4-151612/p4-builder:{{ .Env.INFRA_VERSION }}
+
+job_environments:
+  common_environment: &common_environment
+    CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
+    APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
+    WP_DB_NAME_PREFIX: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}
+  develop_environment: &develop_environment
+    APP_ENVIRONMENT: development
+    APP_HOSTNAME: k8s.p4.{{ .Env.APP_HOSTNAME }}
+    CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
+    GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
+    GCLOUD_CLUSTER: p4-development
+    HELM_NAMESPACE: develop
+    HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}
+    NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
+    WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
+    WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
+
+job_definitions:
+  build_steps: &build_steps
+    working_directory: ~/
+    steps:
+      - setup_remote_docker
+      - restore_cache:
+        keys:
+          - {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
+          - {{"composer-v5-{{ .Branch }}-{{ .Revision }}"}}
+          - {{"composer-v5-{{ .Branch }}"}}
+          - composer-v5
+      - run: activate-gcloud-account.sh
+      - run: mkdir -p /tmp/workspace/var
+      - run: mkdir -p /tmp/workspace/src
+      - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
+      - run: make
+      - run:
+        name: Notify failure
+        when: on_fail
+        command: TYPE="Build" notify-job-failure.sh
+      - save_cache:
+        key: {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
+        paths:
+          - source/cache
+      - persist_to_workspace:
+        root: /tmp/workspace
+        paths:
+          - var
+          - src
+
+  deploy_steps: &deploy_steps
+    working_directory: ~/
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: activate-gcloud-account.sh
+      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
+
+jobs:
+  build-branch:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    <<: *build_steps
+
+  deploy-develop:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    <<: *deploy_steps
+
+workflow_definitions:
+  develop_common: &develop_common
+    context: org-global
+    filters:
+      branches:
+        only: develop
+
+workflows:
+  version: 2
+  develop:
+    jobs:
+    - build-branch:
+        <<: *develop_common
+    - deploy-develop:
+        <<: *develop_common
+        requires:
+          - build-branch
