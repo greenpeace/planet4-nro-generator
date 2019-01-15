@@ -20,7 +20,7 @@ job_environments:
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
-{{if .Env.MAKE_RELEASE}}
+{{if isTrue .Env.MAKE_RELEASE}}
   release_environment: &release_environment
     APP_ENVIRONMENT: staging
     APP_HOSTNAME: release.k8s.p4.{{ .Env.APP_HOSTNAME }}
@@ -33,7 +33,7 @@ job_environments:
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
 {{end}}
-{{if .Env.MAKE_MASTER}}
+{{if isTrue .Env.MAKE_MASTER}}
   production_environment: &production_environment
     APP_HOSTNAME: master.k8s.p4.{{ .Env.APP_HOSTNAME }}
     CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
@@ -77,7 +77,7 @@ job_definitions:
           - var
           - src
 
-{{if .Env.MAKE_RELEASE}}
+{{if isTrue .Env.MAKE_RELEASE}}
   prepare_release: &prepare_release
     working_directory: /tmp/workspace/src
     steps:
@@ -148,7 +148,7 @@ jobs:
       <<: *develop_environment
     <<: *build_steps
 
-{{if .Env.MAKE_RELEASE}}
+{{if isTrue .Env.MAKE_RELEASE}}
   prepare-release:
     <<: *defaults
     <<: *prepare_release
@@ -172,7 +172,7 @@ jobs:
     <<: *finish_release
 {{end}}
 
-{{if .Env.MAKE_MASTER}}
+{{if isTrue .Env.MAKE_MASTER}}
   build-tag:
     <<: *defaults
     environment:
@@ -195,7 +195,7 @@ jobs:
       <<: *develop_environment
     <<: *deploy_steps
 
-{{if .Env.MAKE_RELEASE}}
+{{if isTrue .Env.MAKE_RELEASE}}
   deploy-release:
     <<: *defaults
     environment:
@@ -204,7 +204,7 @@ jobs:
     <<: *deploy_steps
 {{end}}
 
-{{if .Env.MAKE_MASTER}}
+{{if isTrue .Env.MAKE_MASTER}}
   deploy-tag:
     <<: *defaults
     environment:
@@ -273,14 +273,14 @@ workflow_definitions:
     filters:
       branches:
         only: develop
-{{if .Env.MAKE_RELEASE}}
+{{if isTrue .Env.MAKE_RELEASE}}
   release_common: &release_common
     context: org-global
     filters:
       branches:
         only: /^release.*/
 {{end}}
-{{if .Env.MAKE_MASTER}}
+{{if isTrue .Env.MAKE_MASTER}}
   tag_common: &tag_common
     context: org-global
     filters:
@@ -312,7 +312,7 @@ workflows:
         requires:
           - deploy-develop
 
-{{if .Env.MAKE_RELEASE}}
+{{if isTrue .Env.MAKE_RELEASE}}
   release:
     jobs:
     - build-release:
@@ -337,7 +337,7 @@ workflows:
           - notify-promote
 {{end}}
 
-{{if .Env.MAKE_MASTER}}
+{{if isTrue .Env.MAKE_MASTER}}
   tag:
     jobs:
       - build-tag:
