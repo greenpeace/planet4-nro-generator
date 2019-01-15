@@ -50,29 +50,29 @@ job_definitions:
     steps:
       - setup_remote_docker
       - restore_cache:
-        keys:
-          - {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
-          - {{"composer-v5-{{ .Branch }}-{{ .Revision }}"}}
-          - {{"composer-v5-{{ .Branch }}"}}
-          - composer-v5
+          keys:
+            - {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
+            - {{"composer-v5-{{ .Branch }}-{{ .Revision }}"}}
+            - {{"composer-v5-{{ .Branch }}"}}
+            - composer-v5
       - run: activate-gcloud-account.sh
       - run: mkdir -p /tmp/workspace/var
       - run: mkdir -p /tmp/workspace/src
       - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
       - run: make
       - run:
-        name: Notify failure
-        when: on_fail
-        command: TYPE="Build" notify-job-failure.sh
+          name: Notify failure
+          when: on_fail
+          command: TYPE="Build" notify-job-failure.sh
       - save_cache:
-        key: {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
-        paths:
-          - source/cache
+          key: {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
+          paths:
+            - source/cache
       - persist_to_workspace:
-        root: /tmp/workspace
-        paths:
-          - var
-          - src
+          root: /tmp/workspace
+          paths:
+            - var
+            - src
 
   prepare_release: &prepare_release
     working_directory: /tmp/workspace/src
