@@ -22,7 +22,6 @@ export $(shell sed 's/=.*//' secrets/env.$(NRO))
 
 DEFAULT_GOAL: all
 
-
 .PHONY: all
 all: test prompt init env deploy done
 
@@ -74,14 +73,31 @@ delete-yes-i-mean-it:	delete-repo-yes-i-mean-it delete-db-yes-i-mean-it delete-b
 
 .PHONY: delete-repo-yes-i-mean-it
 delete-repo-yes-i-mean-it:
-	delete_github_repo.sh
+	FORCE_DELETE="true" delete_github_repo.sh
 
 .PHONY: delete-db-yes-i-mean-it
 delete-db-yes-i-mean-it:
-	delete_db.sh
+	FORCE_DELETE="true" delete_db.sh
 
 .PHONY: delete-bucket-yes-i-mean-it
 delete-bucket-yes-i-mean-it:
+	FORCE_DELETE="true" delete_bucket.sh
+
+################################################################################
+
+.PHONY: delete
+delete:	delete-repo delete-db delete-bucket
+
+.PHONY: delete-repo
+delete-repo:
+	delete_github_repo.sh
+
+.PHONY: delete-db
+delete-db:
+	delete_db.sh
+
+.PHONY: delete-bucket
+delete-bucket:
 	delete_bucket.sh
 
 ################################################################################
@@ -89,7 +105,6 @@ delete-bucket-yes-i-mean-it:
 .PHONY: deploy
 deploy:
 	trigger_build.sh
-
 
 ################################################################################
 

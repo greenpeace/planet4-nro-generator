@@ -11,12 +11,13 @@ echo
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo
 
-read -p "Are you sure? [y/N] " yn
-case $yn in
-    [Yy]* ) : ;;
-    * ) exit;;
-esac
-
+[[ $FORCE_DELETE = "true" ]] || {
+  read -n 1 -rp "Are you sure? [y/N] " yn
+  case "$yn" in
+      [Yy]* ) : ;;
+      * ) exit;;
+  esac
+}
 echo
 echo "Deleting github.com/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME} ..."
 echo

@@ -29,11 +29,14 @@ echo "Database: ${db}"
 echo
 echo "This can not be undone!"
 echo
-read -p "Are you sure? [y/N] " yn
-case $yn in
-    [Yy]* ) : ;;
-    * ) exit;;
-esac
+[[ $FORCE_DELETE = "true" ]] || {
+  read -n 1 -rp "Are you sure? [y/N] " yn
+  case "$yn" in
+      [Yy]* ) : ;;
+      * ) exit;;
+  esac
+}
+
 
 # FIXME Business logic, introduce option for separate STAGING environment
 if [[ ${CLOUDSQL_ENV} = "develop" ]]
