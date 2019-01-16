@@ -12,7 +12,7 @@ fi
 if command -v jq > /dev/null
 then
   echo "$(jq --version) validating: secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json"
-  if ! jq -e . <secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json
+  if ! jq -e . <"secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json"
   then
     echo "ERROR reading: secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json"
     echo "Failed to parse JSON, or got false/null"
@@ -23,7 +23,7 @@ else
   "Please install 'jq' to validate json files: https://stedolan.github.io/jq/download/"
 fi
 
-json_b64=$(cat secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json | openssl base64 -A)
+json_b64=$(openssl base64 -A <"secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json")
 
 add_ci_env_var.sh WP_STATELESS_KEY "$json_b64"
 add_ci_env_var.sh SQLPROXY_KEY "$json_b64"

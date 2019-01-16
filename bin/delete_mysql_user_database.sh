@@ -29,11 +29,14 @@ echo "Database: ${db}"
 echo
 echo "This can not be undone!"
 echo
-read -p "Are you sure? [y/N] " yn
-case $yn in
-    [Yy]* ) : ;;
-    * ) exit;;
-esac
+[[ $FORCE_DELETE = "true" ]] || {
+  read -n 1 -rp "Are you sure? [y/N] " yn
+  case "$yn" in
+      [Yy]* ) : ;;
+      * ) exit;;
+  esac
+}
+
 
 # FIXME Business logic, introduce option for separate STAGING environment
 if [[ ${CLOUDSQL_ENV} = "develop" ]]
@@ -49,7 +52,7 @@ fi
 
 # Start SQL proxy in background
 cloud_sql_proxy "-instances=${instanceName}=tcp:3306" \
-                 -credential_file=secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json &
+                 -credential_file="secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json" &
 
 # Generate files from template, and wait until TCP port is open
 MYSQL_DATABASE=${db} \

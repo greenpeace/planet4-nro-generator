@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 GITHUB_SSH_KEY ?= $(HOME)/.ssh/id_rsa
 
-NRO ?= $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
+NRO ?= $(shell cat NRO_NAME | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 ifeq ($(strip $(NRO)),)
 $(error NRO name not set, please run ./configure.sh)
 endif
@@ -21,7 +21,6 @@ export $(shell sed 's/=.*//' secrets/env.$(NRO))
 ###############################################################################
 
 DEFAULT_GOAL: all
-
 
 .PHONY: all
 all: test prompt init env deploy done
@@ -74,14 +73,31 @@ delete-yes-i-mean-it:	delete-repo-yes-i-mean-it delete-db-yes-i-mean-it delete-b
 
 .PHONY: delete-repo-yes-i-mean-it
 delete-repo-yes-i-mean-it:
-	delete_github_repo.sh
+	FORCE_DELETE="true" delete_github_repo.sh
 
 .PHONY: delete-db-yes-i-mean-it
 delete-db-yes-i-mean-it:
-	delete_db.sh
+	FORCE_DELETE="true" delete_db.sh
 
 .PHONY: delete-bucket-yes-i-mean-it
 delete-bucket-yes-i-mean-it:
+	FORCE_DELETE="true" delete_bucket.sh
+
+################################################################################
+
+.PHONY: delete
+delete:	delete-repo delete-db delete-bucket
+
+.PHONY: delete-repo
+delete-repo:
+	delete_github_repo.sh
+
+.PHONY: delete-db
+delete-db:
+	delete_db.sh
+
+.PHONY: delete-bucket
+delete-bucket:
 	delete_bucket.sh
 
 ################################################################################
@@ -89,7 +105,6 @@ delete-bucket-yes-i-mean-it:
 .PHONY: deploy
 deploy:
 	trigger_build.sh
-
 
 ################################################################################
 
@@ -127,4 +142,7 @@ delete-service-account-yes-i-mean-it:
 done:
 	@echo "@todo: Add user key for read/write operations"
 	@echo "Visit https://circleci.com/gh/greenpeace/$(CONTAINER_PREFIX)/edit#checkout"
+	@echo
+	@echo "@todo: Configure Google Apps OAUTH credentials"
+	@echo "Visit https://console.cloud.google.com/apis/credentials"
 	@echo

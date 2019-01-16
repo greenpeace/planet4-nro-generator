@@ -9,10 +9,14 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
       jq \
       make \
       mysql-client \
+      python-setuptools \
+      python-pip \
       rsync \
       unzip \
       && \
     rm -r /var/lib/apt/lists/*
+
+RUN pip install yamllint
 
 RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /app/bin/cloud_sql_proxy && \
     chmod 755 /app/bin/cloud_sql_proxy && \
@@ -44,7 +48,7 @@ ENV \
     GITHUB_OAUTH_TOKEN="" \
     GITHUB_MACHINE_USER="greenpeace-circleci" \
     GOOGLE_PROJECT_ID="planet-4-151612" \
-    INFRA_VERSION="latest" \
+    BUILDER_VERSION="latest" \
     MAKE_DEVELOP="true" \
     MAKE_MASTER="true" \
     MAKE_RELEASE="true" \
