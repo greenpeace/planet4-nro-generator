@@ -118,6 +118,10 @@ PRODUCTION_HOSTNAME=${PRODUCTION_HOSTNAME:-master.k8s.p4.greenpeace.org}
 read -p "PRODUCTION_HOSTNAME [${PRODUCTION_HOSTNAME}] " hostname_production
 PRODUCTION_HOSTNAME=${hostname_production-$PRODUCTION_HOSTNAME}
 echo
+BUILDER_VERSION=${BUILDER_VERSION:-latest}
+read -rp "BUILDER_VERSION [${BUILDER_VERSION}] " builder_version
+BUILDER_VERSION=${builder_version:-$BUILDER_VERSION}
+echo
 echo "---"
 echo
 GITHUB_REPOSITORY_NAME=${GITHUB_REPOSITORY_NAME:-planet4-${nro_sanitised}}

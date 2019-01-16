@@ -44,7 +44,7 @@ ENV \
     GITHUB_OAUTH_TOKEN="" \
     GITHUB_MACHINE_USER="greenpeace-circleci" \
     GOOGLE_PROJECT_ID="planet-4-151612" \
-    INFRA_VERSION="latest" \
+    BUILDER_VERSION="latest" \
     MAKE_DEVELOP="true" \
     MAKE_MASTER="true" \
     MAKE_RELEASE="true" \
