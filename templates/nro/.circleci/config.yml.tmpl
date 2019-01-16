@@ -20,7 +20,7 @@ job_environments:
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
-{{if isTrue .Env.MAKE_RELEASE}}
+{{- if isTrue .Env.MAKE_RELEASE}}
   release_environment: &release_environment
     APP_ENVIRONMENT: staging
     APP_HOSTNAME: {{ .Env.RELEASE_HOSTNAME }}
@@ -36,8 +36,8 @@ job_environments:
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
-{{end}}
-{{if isTrue .Env.MAKE_MASTER}}
+{{- end}}
+{{- if isTrue .Env.MAKE_MASTER}}
   production_environment: &production_environment
     APP_HOSTNAME: {{ .Env.PRODUCTION_HOSTNAME }}
     CLOUDSQL_INSTANCE: {{ .Env.GCP_PRODUCTION_CLOUDSQL }}
@@ -53,7 +53,7 @@ job_environments:
     NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
-{{end}}
+{{- end}}
 
 job_definitions:
   build_steps: &build_steps
@@ -85,7 +85,7 @@ job_definitions:
           - var
           - src
 
-{{if isTrue .Env.MAKE_RELEASE}}
+{{- if isTrue .Env.MAKE_RELEASE}}
   prepare_release: &prepare_release
     working_directory: /tmp/workspace/src
     steps:
@@ -138,7 +138,7 @@ job_definitions:
           name: Notify failure
           when: on_fail
           command: TYPE="Promote" notify-job-failure.sh
-{{end}}
+{{- end}}
 
   deploy_steps: &deploy_steps
     working_directory: ~/
@@ -156,7 +156,7 @@ jobs:
       <<: *develop_environment
     <<: *build_steps
 
-{{if isTrue .Env.MAKE_RELEASE}}
+{{- if isTrue .Env.MAKE_RELEASE}}
   prepare-release:
     <<: *defaults
     <<: *prepare_release
@@ -178,9 +178,9 @@ jobs:
   finish-release:
     <<: *defaults
     <<: *finish_release
-{{end}}
+{{- end}}
 
-{{if isTrue .Env.MAKE_MASTER}}
+{{- if isTrue .Env.MAKE_MASTER}}
   build-tag:
     <<: *defaults
     environment:
@@ -194,7 +194,7 @@ jobs:
       <<: *common_environment
       <<: *production_environment
     <<: *notify_hold
-{{end}}
+{{- end}}
 
   deploy-develop:
     <<: *defaults
@@ -203,16 +203,16 @@ jobs:
       <<: *develop_environment
     <<: *deploy_steps
 
-{{if isTrue .Env.MAKE_RELEASE}}
+{{- if isTrue .Env.MAKE_RELEASE}}
   deploy-release:
     <<: *defaults
     environment:
       <<: *common_environment
       <<: *release_environment
     <<: *deploy_steps
-{{end}}
+{{- end}}
 
-{{if isTrue .Env.MAKE_MASTER}}
+{{- if isTrue .Env.MAKE_MASTER}}
   deploy-tag:
     <<: *defaults
     environment:
@@ -272,7 +272,7 @@ jobs:
             ${HOME}/scripts/activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_to_sync_site.sh develop
-{{end}}
+{{- end}}
 
 
 workflow_definitions:
@@ -281,14 +281,14 @@ workflow_definitions:
     filters:
       branches:
         only: develop
-{{if isTrue .Env.MAKE_RELEASE}}
+{{- if isTrue .Env.MAKE_RELEASE}}
   release_common: &release_common
     context: org-global
     filters:
       branches:
         only: /^release.*/
-{{end}}
-{{if isTrue .Env.MAKE_MASTER}}
+{{- end}}
+{{- if isTrue .Env.MAKE_MASTER}}
   tag_common: &tag_common
     context: org-global
     filters:
@@ -303,7 +303,7 @@ workflow_definitions:
         ignore: /.*/
       tags:
         only: /sync.*/
-{{end}}
+{{- end}}
 
 workflows:
   version: 2
@@ -320,7 +320,7 @@ workflows:
         requires:
           - deploy-develop
 
-{{if isTrue .Env.MAKE_RELEASE}}
+{{- if isTrue .Env.MAKE_RELEASE}}
   release:
     jobs:
     - build-release:
@@ -343,9 +343,9 @@ workflows:
         requires:
           - hold-promote
           - notify-promote
-{{end}}
+{{- end}}
 
-{{if isTrue .Env.MAKE_MASTER}}
+{{- if isTrue .Env.MAKE_MASTER}}
   tag:
     jobs:
       - build-tag:
@@ -376,4 +376,4 @@ workflows:
         <<: *sync_common
         requires:
           - sync-sql-to-release
-{{end}}
+{{- end}}
