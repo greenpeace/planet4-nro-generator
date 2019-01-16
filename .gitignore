@@ -1,7 +1,7 @@
 src/
 bucket/
 helper/
-NRO
+NRO_NAME
 SERVICE_ACCOUNT_NAME
 *.json
 

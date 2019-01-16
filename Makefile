@@ -1,8 +1,10 @@
 SHELL := /bin/bash
 
+# Use default SSH key if not set
 GITHUB_SSH_KEY ?= $(HOME)/.ssh/id_rsa
 
-NRO ?= $(shell cat NRO | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
+# convert NRO name to lowercase, remove punctuation, replace space with hyphen
+NRO ?= $(shell cat NRO_NAME | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 ifeq ($(strip $(NRO)),)
 $(error NRO name not set, please run ./configure.sh)
 endif

@@ -71,9 +71,9 @@ fi
 
 read_properties secrets/common
 
-if [[ -f "NRO" ]]
+if [[ -f "NRO_NAME" ]]
 then
-  previous_nro=$(cat NRO)
+  previous_nro=$(cat NRO_NAME)
 else
   previous_nro=
 fi
@@ -90,7 +90,7 @@ then
   exit 1
 fi
 
-echo $nro > NRO
+echo "$nro" > NRO_NAME
 
 nro_sanitised=$(echo $nro | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 
