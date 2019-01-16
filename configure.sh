@@ -102,9 +102,23 @@ fi
 echo
 echo "---"
 echo
-APP_HOSTPATH=${APP_HOSTPATH:-$nro_sanitised}
+APP_HOSTPATH=${APP_HOSTPATH-$nro_sanitised}
 read -p "APP_HOSTPATH [${APP_HOSTPATH}] " app_hostpath
-APP_HOSTPATH=${app_hostpath:-$APP_HOSTPATH}
+APP_HOSTPATH=${app_hostpath-$APP_HOSTPATH}
+echo
+DEVELOPMENT_HOSTNAME=${DEVELOPMENT_HOSTNAME:-k8s.p4.greenpeace.org}
+read -p "DEVELOPMENT_HOSTNAME [${DEVELOPMENT_HOSTNAME}] " hostname_develop
+DEVELOPMENT_HOSTNAME=${hostname_develop-$DEVELOPMENT_HOSTNAME}
+echo
+RELEASE_HOSTNAME=${RELEASE_HOSTNAME:-release.k8s.p4.greenpeace.org}
+read -p "RELEASE_HOSTNAME [${RELEASE_HOSTNAME}] " hostname_release
+RELEASE_HOSTNAME=${hostname_release-$RELEASE_HOSTNAME}
+echo
+PRODUCTION_HOSTNAME=${PRODUCTION_HOSTNAME:-master.k8s.p4.greenpeace.org}
+read -p "PRODUCTION_HOSTNAME [${PRODUCTION_HOSTNAME}] " hostname_production
+PRODUCTION_HOSTNAME=${hostname_production-$PRODUCTION_HOSTNAME}
+echo
+echo "---"
 echo
 GITHUB_REPOSITORY_NAME=${GITHUB_REPOSITORY_NAME:-planet4-${nro_sanitised}}
 read -p "GITHUB_REPOSITORY_NAME [${GITHUB_REPOSITORY_NAME}] " repo_name
@@ -140,7 +154,7 @@ NEWRELIC_APPNAME=${nr_appname:-$NEWRELIC_APPNAME}
 echo
 echo "---"
 echo
-MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${nro_sanitised:0:8}"}
+MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${${nro_sanitised:0:8}%-}"}
 read -p "MYSQL_USERNAME [${MYSQL_USERNAME}] " mysql_user
 MYSQL_USERNAME=${mysql_user:-$MYSQL_USERNAME}
 echo
