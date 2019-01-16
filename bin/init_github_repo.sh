@@ -124,6 +124,9 @@ echo "---------"
 echo
 echo "Creating files from template ..."
 
+# Clean empty hostpath value
+[[ $APP_HOSTPATH == '""' ]] && APP_HOSTPATH=
+
 dockerize \
   -template .circleci/config.yml.tmpl:.circleci/config.yml \
   -template composer-local.json.tmpl:composer-local.json
