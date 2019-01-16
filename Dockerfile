@@ -9,10 +9,14 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
       jq \
       make \
       mysql-client \
+      python-setuptools \
+      python-pip \
       rsync \
       unzip \
       && \
     rm -r /var/lib/apt/lists/*
+
+RUN pip install yamllint
 
 RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /app/bin/cloud_sql_proxy && \
     chmod 755 /app/bin/cloud_sql_proxy && \

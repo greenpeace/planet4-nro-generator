@@ -131,6 +131,8 @@ dockerize \
   -template .circleci/config.yml.tmpl:.circleci/config.yml \
   -template composer-local.json.tmpl:composer-local.json
 
+yamllint -c /app/.yamllint .circleci/config.yml
+
 echo
 echo "---------"
 echo
