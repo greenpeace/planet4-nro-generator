@@ -143,3 +143,6 @@ done:
 	@echo "@todo: Add user key for read/write operations"
 	@echo "Visit https://circleci.com/gh/greenpeace/$(CONTAINER_PREFIX)/edit#checkout"
 	@echo
+	@echo "@todo: Configure Google Apps OAUTH credentials"
+	@echo "Visit https://console.cloud.google.com/apis/credentials"
+	@echo
