@@ -22,26 +22,26 @@ then
   echo "---"
   echo
   echo "CircleCI token: https://circleci.com/account/api"
-  read -sp "CIRCLE_TOKEN " CIRCLE_TOKEN
+  read -srp "CIRCLE_TOKEN " CIRCLE_TOKEN
   echo
   echo "---"
   echo
   echo "Github personal access token: https://github.com/settings/tokens"
-  read -sp "GITHUB_OAUTH_TOKEN " GITHUB_OAUTH_TOKEN
+  read -srp "GITHUB_OAUTH_TOKEN " GITHUB_OAUTH_TOKEN
   echo
   echo "---"
   echo
   echo "Production environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
-  read -p "MYSQL_PRODUCTION_ROOT_USER [root] " prod_root_user
+  read -rp "MYSQL_PRODUCTION_ROOT_USER [root] " prod_root_user
   MYSQL_PRODUCTION_ROOT_USER=${prod_root_user:-root}
-  read -sp "MYSQL_PRODUCTION_ROOT_PASSWORD " MYSQL_PRODUCTION_ROOT_PASSWORD
+  read -srp "MYSQL_PRODUCTION_ROOT_PASSWORD " MYSQL_PRODUCTION_ROOT_PASSWORD
   echo
   echo "---"
   echo
   echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
-  read -p "MYSQL_DEVELOPMENT_ROOT_USER [root] " dev_root_user
+  read -rp "MYSQL_DEVELOPMENT_ROOT_USER [root] " dev_root_user
   MYSQL_DEVELOPMENT_ROOT_USER=${dev_root_user:-root}
-  read -sp "MYSQL_DEVELOPMENT_ROOT_PASSWORD " MYSQL_DEVELOPMENT_ROOT_PASSWORD
+  read -srp "MYSQL_DEVELOPMENT_ROOT_PASSWORD " MYSQL_DEVELOPMENT_ROOT_PASSWORD
   echo
   echo "---"
 
@@ -81,7 +81,7 @@ fi
 echo "---"
 echo
 nro=${1:-$previous_nro}
-read -p "Enter NRO display name, eg: 'Netherlands' [$nro] " this_nro
+read -rp "Enter NRO display name, eg: 'Netherlands' [$nro] " this_nro
 nro=${this_nro:-$nro}
 
 if [[ -z "${nro}" ]]
@@ -92,31 +92,31 @@ fi
 
 echo "$nro" > NRO_NAME
 
-nro_sanitised=$(echo $nro | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
+nro_sanitised=$(echo "$nro" | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 
 if [[ -f "secrets/env.${nro_sanitised}" ]]
 then
-  read_properties secrets/env.${nro_sanitised}
+  read_properties "secrets/env.${nro_sanitised}"
 fi
 
 echo
 echo "---"
 echo
 APP_HOSTPATH=${APP_HOSTPATH-$nro_sanitised}
-read -p "APP_HOSTPATH [${APP_HOSTPATH}] " app_hostpath
+read -rp "APP_HOSTPATH [${APP_HOSTPATH}] " app_hostpath
 APP_HOSTPATH=${app_hostpath-$APP_HOSTPATH}
 echo
 DEVELOPMENT_HOSTNAME=${DEVELOPMENT_HOSTNAME:-k8s.p4.greenpeace.org}
-read -p "DEVELOPMENT_HOSTNAME [${DEVELOPMENT_HOSTNAME}] " hostname_develop
-DEVELOPMENT_HOSTNAME=${hostname_develop-$DEVELOPMENT_HOSTNAME}
+read -rp "DEVELOPMENT_HOSTNAME [${DEVELOPMENT_HOSTNAME}] " hostname_develop
+DEVELOPMENT_HOSTNAME=${hostname_develop:-$DEVELOPMENT_HOSTNAME}
 echo
 RELEASE_HOSTNAME=${RELEASE_HOSTNAME:-release.k8s.p4.greenpeace.org}
-read -p "RELEASE_HOSTNAME [${RELEASE_HOSTNAME}] " hostname_release
-RELEASE_HOSTNAME=${hostname_release-$RELEASE_HOSTNAME}
+read -rp "RELEASE_HOSTNAME [${RELEASE_HOSTNAME}] " hostname_release
+RELEASE_HOSTNAME=${hostname_release:-$RELEASE_HOSTNAME}
 echo
 PRODUCTION_HOSTNAME=${PRODUCTION_HOSTNAME:-master.k8s.p4.greenpeace.org}
-read -p "PRODUCTION_HOSTNAME [${PRODUCTION_HOSTNAME}] " hostname_production
-PRODUCTION_HOSTNAME=${hostname_production-$PRODUCTION_HOSTNAME}
+read -rp "PRODUCTION_HOSTNAME [${PRODUCTION_HOSTNAME}] " hostname_production
+PRODUCTION_HOSTNAME=${hostname_production:-$PRODUCTION_HOSTNAME}
 echo
 BUILDER_VERSION=${BUILDER_VERSION:-latest}
 read -rp "BUILDER_VERSION [${BUILDER_VERSION}] " builder_version
@@ -125,54 +125,54 @@ echo
 echo "---"
 echo
 GITHUB_REPOSITORY_NAME=${GITHUB_REPOSITORY_NAME:-planet4-${nro_sanitised}}
-read -p "GITHUB_REPOSITORY_NAME [${GITHUB_REPOSITORY_NAME}] " repo_name
+read -rp "GITHUB_REPOSITORY_NAME [${GITHUB_REPOSITORY_NAME}] " repo_name
 GITHUB_REPOSITORY_NAME=${repo_name:-$GITHUB_REPOSITORY_NAME}
 echo
 CONTAINER_PREFIX=${CONTAINER_PREFIX:-planet4-${nro_sanitised}}
-read -p "CONTAINER_PREFIX [${CONTAINER_PREFIX}] " container_prefix
+read -rp "CONTAINER_PREFIX [${CONTAINER_PREFIX}] " container_prefix
 CONTAINER_PREFIX=${container_prefix:-$CONTAINER_PREFIX}
 echo
 GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-$(git config --global user.email || true)}
-read -p "GITHUB_USER_EMAIL [${GITHUB_USER_EMAIL}] " git_email
+read -rp "GITHUB_USER_EMAIL [${GITHUB_USER_EMAIL}] " git_email
 GITHUB_USER_EMAIL=${git_email:-$GITHUB_USER_EMAIL}
 echo
 GITHUB_USER_NAME=${GITHUB_USER_NAME:-$(git config --global user.name || true)}
-read -p "GITHUB_USER_NAME [${GITHUB_USER_NAME}] " git_name
+read -rp "GITHUB_USER_NAME [${GITHUB_USER_NAME}] " git_name
 GITHUB_USER_NAME=${git_name:-$GITHUB_USER_NAME}
 echo
 MAKE_DEVELOP=${MAKE_DEVELOP:-true}
-read -p "MAKE_DEVELOP [${MAKE_DEVELOP}] " make_develop
+read -rp "MAKE_DEVELOP [${MAKE_DEVELOP}] " make_develop
 MAKE_DEVELOP=${make_develop:-$MAKE_DEVELOP}
 echo
 MAKE_RELEASE=${MAKE_RELEASE:-true}
-read -p "MAKE_RELEASE [${MAKE_RELEASE}] " make_release
+read -rp "MAKE_RELEASE [${MAKE_RELEASE}] " make_release
 MAKE_RELEASE=${make_release:-$MAKE_RELEASE}
 echo
 MAKE_MASTER=${MAKE_MASTER:-true}
-read -p "MAKE_MASTER [${MAKE_MASTER}] " make_master
+read -rp "MAKE_MASTER [${MAKE_MASTER}] " make_master
 MAKE_MASTER=${make_master:-$MAKE_MASTER}
 echo
 NEWRELIC_APPNAME=${NEWRELIC_APPNAME:-"P4 ${nro}"}
-read -p "NEWRELIC_APPNAME [${NEWRELIC_APPNAME}] " nr_appname
+read -rp "NEWRELIC_APPNAME [${NEWRELIC_APPNAME}] " nr_appname
 NEWRELIC_APPNAME=${nr_appname:-$NEWRELIC_APPNAME}
 echo
 echo "---"
 echo
-MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${${nro_sanitised:0:8}%-}"}
-read -p "MYSQL_USERNAME [${MYSQL_USERNAME}] " mysql_user
+MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${nro_sanitised:0:8}"}
+read -rp "MYSQL_USERNAME [${MYSQL_USERNAME}] " mysql_user
 MYSQL_USERNAME=${mysql_user:-$MYSQL_USERNAME}
 echo
 MYSQL_PASSWORD=${MYSQL_PASSWORD:-$(LC_ALL=C < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${pw_length};echo;)}
-read -p "MYSQL_PASSWORD [${MYSQL_PASSWORD}] " mysql_pass
+read -rp "MYSQL_PASSWORD [${MYSQL_PASSWORD}] " mysql_pass
 MYSQL_PASSWORD=${mysql_pass:-$MYSQL_PASSWORD}
 echo
 echo "Google storage bucket locations: https://cloud.google.com/storage/docs/bucket-locations"
 STATELESS_BUCKET_LOCATION=${STATELESS_BUCKET_LOCATION:-us}
-read -p "STATELESS_BUCKET_LOCATION [${STATELESS_BUCKET_LOCATION}] " bucket_location
+read -rp "STATELESS_BUCKET_LOCATION [${STATELESS_BUCKET_LOCATION}] " bucket_location
 STATELESS_BUCKET_LOCATION=${bucket_location:-$STATELESS_BUCKET_LOCATION}
 echo
 dockerize --template "env.tmpl:secrets/env.${nro_sanitised}"
-cat secrets/env.${nro_sanitised}
+cat "secrets/env.${nro_sanitised}"
 echo
 echo "---"
 echo
@@ -187,7 +187,7 @@ then
 fi
 
 echo "Service account name: ${service_account_name}"
-echo $service_account_name > SERVICE_ACCOUNT_NAME
+echo "$service_account_name" > SERVICE_ACCOUNT_NAME
 
 if [[ ! -f "secrets/service-accounts/${service_account_name}.json" ]]
 then
@@ -199,7 +199,7 @@ fi
 if command -v jq > /dev/null
 then
   echo "$(jq --version) validating: secrets/service-accounts/${service_account_name}.json"
-  if ! jq -e . <secrets/service-accounts/${service_account_name}.json
+  if ! jq -e . < "secrets/service-accounts/${service_account_name}.json"
   then
     echo "ERROR reading: secrets/service-accounts/${service_account_name}.json"
     echo "Failed to parse JSON, or got false/null"

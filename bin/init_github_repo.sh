@@ -39,12 +39,12 @@ function curl_string() {
     >&2 echo "ERROR: HTTP_STATUS $HTTP_STATUS"
   fi
 
-  >&2 jq -r <<< $HTTP_BODY
+  >&2 jq -r <<< "$HTTP_BODY"
 
 }
 
 function get_response_var() {
-  jq -M -r "$1" <<< $HTTP_BODY
+  jq -M -r "$1" <<< "$HTTP_BODY"
 }
 
 # ============================================================================
@@ -66,7 +66,7 @@ clone_url=$(get_response_var .ssh_url)
 if [[ -z "$clone_url" ]] || [[ $clone_url = "null" ]]
 then
   >&2 echo "WARNING: .ssh_url is '$clone_url', attempting to continue..."
-  curl_string https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}
+  curl_string "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
   clone_url=$(get_response_var .ssh_url)
 fi
 
