@@ -114,11 +114,11 @@ CONTAINER_PREFIX=${CONTAINER_PREFIX:-planet4-${nro_sanitised}}
 read -p "CONTAINER_PREFIX [${CONTAINER_PREFIX}] " container_prefix
 CONTAINER_PREFIX=${container_prefix:-$CONTAINER_PREFIX}
 echo
-GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-$(git config --global user.email)}
+GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-$(git config --global user.email || true)}
 read -p "GITHUB_USER_EMAIL [${GITHUB_USER_EMAIL}] " git_email
 GITHUB_USER_EMAIL=${git_email:-$GITHUB_USER_EMAIL}
 echo
-GITHUB_USER_NAME=${GITHUB_USER_NAME:-$(git config --global user.name)}
+GITHUB_USER_NAME=${GITHUB_USER_NAME:-$(git config --global user.name || true)}
 read -p "GITHUB_USER_NAME [${GITHUB_USER_NAME}] " git_name
 GITHUB_USER_NAME=${git_name:-$GITHUB_USER_NAME}
 echo
