@@ -316,12 +316,12 @@ workflows:
           <<: *develop_common
           requires:
             - build-branch
+{{- if isTrue .Env.MAKE_RELEASE }}
       - prepare-release:
           <<: *develop_common
           requires:
             - deploy-develop
 
-{{- if isTrue .Env.MAKE_RELEASE }}
   release:
     jobs:
       - build-release:
