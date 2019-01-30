@@ -1,0 +1,22 @@
+---
+defaults: &defaults
+  docker:
+    - image: gcr.io/planet-4-151612/circleci-base:latest
+
+version: 2
+
+jobs:
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make lint
+
+workflows:
+  version: 2
+  branch:
+    jobs:
+      - lint:
+          filters:
+            branches:
+              only: /.*/

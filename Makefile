@@ -38,8 +38,15 @@ endif
 
 ###############################################################################
 
+.DEFAULT_GOAL := run
+
+lint: lint-sh
+
+lint-sh:
+	find . -type f -name '*.sh' | xargs shellcheck
+
 .PHONY: run
-run:
+run: lint
 	docker build -t p4-build .
 	docker run --rm -ti \
 		--name p4-nro-generator \
@@ -50,7 +57,7 @@ run:
 		p4-build make -f Makefile-run $(RUN_ARGS)
 
 .PHONY: run-circleci
-run-circleci:
+run-circleci: lint
 	docker build -t p4-build .
 	docker run --rm -i \
 		--name p4-nro-generator \
