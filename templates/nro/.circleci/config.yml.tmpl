@@ -127,14 +127,9 @@ job_definitions:
             notify-job-hold.sh
 
   finish_release: &finish_release
-    working_directory: /tmp/workspace/src
     steps:
-      - attach_workspace:
-          at: /tmp/workspace
       - checkout
-      - run: increment-version.sh "$(git-current-tag.sh)" | tee /tmp/workspace/var/new_release
       - run: release-finish.sh
-      - run: git push origin --delete release/$(cat /tmp/workspace/var/new_release)
       - run:
           name: Notify failure
           when: on_fail
