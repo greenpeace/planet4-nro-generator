@@ -23,7 +23,9 @@ function curl_string() {
   echo "curl" "${str[@]}"
   HTTP_RESPONSE="$(curl -s --write-out "HTTPSTATUS:%{http_code}" "${str[@]}")"
   HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-  HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
+  # Pure bash search replace is much slower here than sed
+  # shellcheck disable=SC2001
+  HTTP_BODY=$(sed -e 's/HTTPSTATUS\:.*//g' <<< "$HTTP_RESPONSE")
 
   [[ $HTTP_STATUS -eq 201 ]] && return
   [[ $HTTP_STATUS -eq 204 ]] && return
@@ -129,7 +131,7 @@ echo "Creating files from template ..."
 
 dockerize \
   -template .circleci/config.yml.tmpl:.circleci/config.yml \
-  -template composer-local.json.tmpl:composer-local.json
+-template composer-local.json.tmpl:composer-local.json
 
 yamllint -c /app/.yamllint .circleci/config.yml
 

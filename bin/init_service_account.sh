@@ -3,7 +3,7 @@ set -ux
 
 name=${1:-${NRO}}
 
-[[ -z "${name:-}" ]] && echo "Usage: $(basename $0) <service-account-name>" && exit 1
+[[ -z "${name:-}" ]] && echo "Usage: $(basename "$0") <service-account-name>" && exit 1
 
 if [[ ! -d "secrets/service-accounts" ]]
 then
@@ -17,28 +17,28 @@ service_account=$name@${GCP_DEVELOPMENT_PROJECT}.iam.gserviceaccount.com
 
 set -x
 
-gcloud config set project ${GCP_DEVELOPMENT_PROJECT}
+gcloud config set project "${GCP_DEVELOPMENT_PROJECT}"
 
-gcloud iam service-accounts create $name --display-name "$display_name"
+gcloud iam service-accounts create "$name" --display-name "$display_name"
 
-gcloud iam service-accounts describe $service_account --format=json
+gcloud iam service-accounts describe "$service_account" --format=json
 
-gcloud projects add-iam-policy-binding ${GCP_DEVELOPMENT_PROJECT} \
+gcloud projects add-iam-policy-binding "${GCP_DEVELOPMENT_PROJECT}" \
   --member="serviceAccount:$service_account" \
-  --role roles/storage.admin
+--role roles/storage.admin
 
-gcloud projects add-iam-policy-binding ${GCP_DEVELOPMENT_PROJECT} \
+gcloud projects add-iam-policy-binding "${GCP_DEVELOPMENT_PROJECT}" \
   --member="serviceAccount:$service_account" \
-  --role roles/cloudsql.client
+--role roles/cloudsql.client
 
-gcloud projects add-iam-policy-binding ${GCP_PRODUCTION_PROJECT} \
+gcloud projects add-iam-policy-binding "${GCP_PRODUCTION_PROJECT}" \
   --member="serviceAccount:$service_account" \
-  --role roles/storage.admin
+--role roles/storage.admin
 
-gcloud projects add-iam-policy-binding ${GCP_PRODUCTION_PROJECT} \
+gcloud projects add-iam-policy-binding "${GCP_PRODUCTION_PROJECT}" \
   --member="serviceAccount:$service_account" \
-  --role roles/cloudsql.client
+--role roles/cloudsql.client
 
-gcloud iam service-accounts keys list --iam-account=$service_account --format=json
+gcloud iam service-accounts keys list --iam-account="$service_account" --format=json
 
-bin/create_service_account_key.sh $name ${GCP_DEVELOPMENT_PROJECT}
+bin/create_service_account_key.sh "$name" "${GCP_DEVELOPMENT_PROJECT}"
