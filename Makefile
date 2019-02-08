@@ -45,6 +45,9 @@ lint: lint-sh
 lint-sh:
 	find . -type f -name '*.sh' | xargs shellcheck
 
+lint-docker:
+	hadolint Dockerfile
+
 .PHONY: run
 run: lint
 	docker build -t p4-build .
