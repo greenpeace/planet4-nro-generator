@@ -40,6 +40,10 @@ endif
 
 .DEFAULT_GOAL := run
 
+clean:
+	rm -f NRO_NAME
+	rm -f SERVICE_ACCOUNT_NAME
+
 lint: lint-sh lint-docker
 
 lint-sh:
