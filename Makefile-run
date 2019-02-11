@@ -108,26 +108,6 @@ deploy:
 
 ################################################################################
 
-.PHONY:
-post-install: helper post-install-nginx post-install-ga-login post-install-update-links
-
-helper:
-	git clone https://github.com/greenpeace/planet4-helper-scripts helper
-
-.PHONY: post-install-nginx
-post-install-nginx:
-	make -C helper nginx-helper
-
-.PHONY: post-install-ga-login
-post-install-ga-login:
-	make -C helper ga-login
-
-.PHONY: post-install-update-links
-post-install-update-links:
-	make -C helper update-links
-
-################################################################################
-
 .PHONY: init-service-account
 init-service-account:
 	init_service_account.sh
