@@ -55,8 +55,11 @@ lint-docker:
 pull:
 	docker pull gcr.io/planet-4-151612/ubuntu:latest
 
+NRO_NAME:
+	./configure.sh
+
 .PHONY: run
-run: lint
+run: lint NRO_NAME
 	docker build -t p4-build .
 	docker run --rm -ti \
 		--name p4-nro-generator \
@@ -67,7 +70,7 @@ run: lint
 		p4-build make -f Makefile-run $(RUN_ARGS)
 
 .PHONY: run-circleci
-run-circleci: lint
+run-circleci: lint NRO_NAME
 	docker build -t p4-build .
 	docker run --rm -i \
 		--name p4-nro-generator \
