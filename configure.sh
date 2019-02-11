@@ -140,6 +140,9 @@ elif [ -n "$app_hostpath" ]
 then
   # Not blank? Means we want to enter a new value
   APP_HOSTPATH=${app_hostpath}
+elif [ -z "$app_hostpath" ] && [ -z "${APP_HOSTPATH}" ]
+then
+  echo " > Blank hostpath - site will respond at root of domain."
 fi
 
 echo
