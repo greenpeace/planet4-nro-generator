@@ -17,8 +17,10 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
       unzip \
       && \
     rm -fr /tmp/* /var/lib/apt/lists/* && \
-    gcloud components install cloudsql/cloud_sql_proxy && \
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+RUN curl -sSo /app/bin/cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
+    chmod 755 /app/bin/cloud_sql_proxy
 
 RUN pip install yamllint==1.14.0
 
