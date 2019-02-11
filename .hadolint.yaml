@@ -1,4 +1,3 @@
 ignored:
   - DL3007 #Using latest is prone to errors if the image will ever update. We'll opt for updates.
   - DL3008 #Pin versions in apt get install. We'll opt for updates.
-  - DL3013 #Pin versions in pip. We'll opt for updates.

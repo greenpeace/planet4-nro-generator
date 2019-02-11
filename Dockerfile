@@ -20,7 +20,7 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
     gcloud components install cloudsql/cloud_sql_proxy && \
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-RUN pip install yamllint
+RUN pip install yamllint==1.14.0
 
 WORKDIR /app
 
