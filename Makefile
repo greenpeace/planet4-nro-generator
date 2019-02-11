@@ -40,7 +40,7 @@ endif
 
 .DEFAULT_GOAL := run
 
-lint: lint-sh
+lint: lint-sh lint-docker
 
 lint-sh:
 	find . -type f -name '*.sh' | xargs shellcheck
