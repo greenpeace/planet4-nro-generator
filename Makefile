@@ -52,6 +52,9 @@ lint-sh:
 lint-docker:
 	hadolint Dockerfile
 
+pull:
+	docker pull gcr.io/planet-4-151612/ubuntu:latest
+
 .PHONY: run
 run: lint
 	docker build -t p4-build .
