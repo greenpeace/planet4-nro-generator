@@ -50,7 +50,7 @@ lint-sh:
 	find . -type f -name '*.sh' | xargs shellcheck
 
 lint-docker:
-	hadolint Dockerfile
+	echo "we need to reinsert hadolint here after the bug Ray found gets fixed"
 
 pull:
 	docker pull gcr.io/planet-4-151612/ubuntu:latest
