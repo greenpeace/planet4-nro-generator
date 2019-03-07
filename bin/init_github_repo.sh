@@ -53,8 +53,9 @@ function get_response_var() {
 #
 # Create new github repository
 #
-# shellcheck disable=2016
+# shellcheck disable=SC2016
 endpoint="https://api.github.com/orgs/${CIRCLE_PROJECT_USERNAME}/repos"
+# shellcheck disable=SC2016
 json=$(jq -n --arg name "${GITHUB_REPOSITORY_NAME}" '{ name: $name }')
 
 echo
@@ -77,6 +78,7 @@ fi
 # Add collaborator bot
 #
 endpoint="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}/collaborators/${GITHUB_MACHINE_USER}"
+# shellcheck disable=SC2016
 json=$(jq -n --arg permissions "admin" '{ permissions: $permissions }')
 
 echo
