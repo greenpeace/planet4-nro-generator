@@ -40,14 +40,14 @@ then
   echo
   echo "---"
   echo
-  echo "Production environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
+  echo "Production environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances?project=planet4-production"
   read -rp "MYSQL_PRODUCTION_ROOT_USER [root] " prod_root_user
   MYSQL_PRODUCTION_ROOT_USER=${prod_root_user:-root}
   read -srp "MYSQL_PRODUCTION_ROOT_PASSWORD " MYSQL_PRODUCTION_ROOT_PASSWORD
   echo
   echo "---"
   echo
-  echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
+  echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances?project=planet-4-15161"
   read -rp "MYSQL_DEVELOPMENT_ROOT_USER [root] " dev_root_user
   MYSQL_DEVELOPMENT_ROOT_USER=${dev_root_user:-root}
   read -srp "MYSQL_DEVELOPMENT_ROOT_PASSWORD " MYSQL_DEVELOPMENT_ROOT_PASSWORD
