@@ -5,9 +5,16 @@
 1. [Github SSH deploy key](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) at `~/.ssh/id_rsa`
 2. [Github OAUTH token](https://github.com/settings/tokens)
 3. [CircleCI API token](https://circleci.com/account/api)
-4. [gcloud](https://cloud.google.com/sdk/gcloud/) installed in $PATH
+4. [docker](https://docs.docker.com/install/) installed and running
 5. [dockerize](https://github.com/jwilder/dockerize/releases) installed in $PATH
-6. `make` installed in $PATH
+6. [gcloud](https://cloud.google.com/sdk/gcloud/) installed in $PATH
+7. `make` installed in $PATH
+
+## Dev Requirements
+
+In addition to the above, you'll also need
+
+1. [shellcheck](https://github.com/jwilder/dockerize/releases) installed in $PATH
 
 ## Deploying a New Planet4 CI Pipeline
 
