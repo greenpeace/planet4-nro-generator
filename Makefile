@@ -52,9 +52,14 @@ clean:
 	rm -f NRO_NAME
 	rm -f SERVICE_ACCOUNT_NAME
 
+.git/hooks/pre-commit:
+	@chmod 755 .githooks/*
+	@find .git/hooks -type l -exec rm {} \;
+	@find .githooks -type f -exec ln -sf ../../{} .git/hooks/ \;
 
 lint:
 	@$(MAKE) -j .git/hooks/pre-commit lint-sh lint-docker
+
 lint-sh:
 ifndef SHELLCHECK
 	$(error "shellcheck is not installed: https://github.com/koalaman/shellcheck")
