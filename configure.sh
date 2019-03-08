@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -eauo pipefail
 
+command -v dockerize > /dev/null || {
+  >&2 echo "*** ERROR: Please install dockerize: https://github.com/jwilder/dockerize#installation"
+  exit 1
+}
+command -v gcloud > /dev/null || {
+  >&2 echo " *** ERROR: Please install gcloud: https://cloud.google.com/sdk/install#installation_options"
+  exit 1
+}
+
 pw_length=32
 
 read_properties()
@@ -241,7 +250,7 @@ then
     exit 1
   fi
 else
-  "Please install 'jq' to validate json files: https://stedolan.github.io/jq/download/"
+  >&2 echo "WARNING: Please install 'jq' to validate json files: https://stedolan.github.io/jq/download/"
 fi
 echo
 echo "---"
