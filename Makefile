@@ -45,7 +45,6 @@ endif
 
 DOCKER := $(shell command -v docker 2> /dev/null)
 SHELLCHECK := $(shell command -v shellcheck 2> /dev/null)
-DOCKERIZE := $(shell command -v dockerize 2> /dev/null)
 
 ###############################################################################
 
@@ -79,13 +78,10 @@ pull:
 	docker pull gcr.io/planet-4-151612/ubuntu:latest
 
 NRO_NAME:
-ifndef DOCKERIZE
-	$(error "dockerize is not installed: https://github.com/jwilder/dockerize#installation/")
-endif
 	./configure.sh
 
 .PHONY: run
-run: lint NRO_NAME
+run: NRO_NAME
 ifndef NRO
 	$(error NRO name not set, please run ./configure.sh)
 endif
@@ -102,7 +98,7 @@ endif
 		p4-build make -f Makefile-run $(RUN_ARGS)
 
 .PHONY: run-circleci
-run-circleci: lint NRO_NAME
+run-circleci: NRO_NAME
 ifndef NRO
 	$(error NRO name not set, please run ./configure.sh)
 endif
