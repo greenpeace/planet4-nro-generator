@@ -32,6 +32,8 @@ VOLUME /app/secrets
 
 COPY . /app
 
+ENTRYPOINT ["/app/bin/entrypoint.sh"]
+
 CMD ["make","all"]
 
 ENV APP_HOSTNAME="greenpeace.org" \

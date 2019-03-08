@@ -85,7 +85,7 @@ run: lint NRO_NAME
 		--name p4-nro-generator \
 		-e "NRO=$(NRO)" \
 		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
-		-v "$(GITHUB_SSH_KEY):/root/.ssh/id_rsa" \
+		-v "$(GITHUB_SSH_KEY):/tmp/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
 		p4-build make -f Makefile-run $(RUN_ARGS)
 
