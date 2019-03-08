@@ -4,21 +4,24 @@ SHELL := /bin/bash
 GITHUB_SSH_KEY ?= $(HOME)/.ssh/id_rsa
 
 # convert NRO name to lowercase, remove punctuation, replace space with hyphen
+
+ifneq ($(wildcard NRO_NAME),)
 NRO ?= $(shell cat NRO_NAME | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
-ifeq ($(strip $(NRO)),)
-$(error NRO name not set, please run ./configure.sh)
 endif
 
-SERVICE_ACCOUNT_NAME ?= $(shell cat SERVICE_ACCOUNT_NAME)
-
-ifeq ("$(wildcard secrets/service-accounts/$(SERVICE_ACCOUNT_NAME).json)","")
-$(error Service account file not found: secrets/service-accounts/$(SERVICE_ACCOUNT_NAME).json)
-endif
-
+ifneq ($(wildcard secrets/common),)
 include secrets/common
 export $(shell sed 's/=.*//' secrets/common)
+endif
+
+ifneq ($(wildcard secrets/env.$(NRO)),)
 include secrets/env.$(NRO)
 export $(shell sed 's/=.*//' secrets/env.$(NRO))
+endif
+
+ifneq ($(wildcard secrets/service-accounts/$(NRO).json),)
+SERVICE_ACCOUNT_NAME ?= $(shell cat SERVICE_ACCOUNT_NAME)
+endif
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
@@ -76,10 +79,19 @@ pull:
 	docker pull gcr.io/planet-4-151612/ubuntu:latest
 
 NRO_NAME:
+ifndef DOCKERIZE
+	$(error "dockerize is not installed: https://github.com/jwilder/dockerize#installation/")
+endif
 	./configure.sh
 
 .PHONY: run
 run: lint NRO_NAME
+ifndef NRO
+	$(error NRO name not set, please run ./configure.sh)
+endif
+ifndef SERVICE_ACCOUNT_NAME
+	$(error SERVICE_ACCOUNT_NAME name not set, please run ./configure.sh)
+endif
 	docker build -t p4-build .
 	docker run --rm -ti \
 		--name p4-nro-generator \
@@ -91,6 +103,12 @@ run: lint NRO_NAME
 
 .PHONY: run-circleci
 run-circleci: lint NRO_NAME
+ifndef NRO
+	$(error NRO name not set, please run ./configure.sh)
+endif
+ifndef SERVICE_ACCOUNT_NAME
+	$(error SERVICE_ACCOUNT_NAME name not set, please run ./configure.sh)
+endif
 	docker build -t p4-build .
 	docker run --rm -i \
 		--name p4-nro-generator \
