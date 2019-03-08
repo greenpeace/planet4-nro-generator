@@ -10,7 +10,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: find -type f -name '*.sh' | xargs shellcheck
+      - run: make lint
 
 workflows:
   version: 2
