@@ -36,6 +36,14 @@ RUN_CIRCLECI_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_CIRCLECI_ARGS):;@:)
 endif
 
+# ---
+
+# Check necessary commands exist
+
+DOCKER := $(shell command -v docker 2> /dev/null)
+SHELLCHECK := $(shell command -v shellcheck 2> /dev/null)
+DOCKERIZE := $(shell command -v dockerize 2> /dev/null)
+
 ###############################################################################
 
 .DEFAULT_GOAL := run
@@ -44,13 +52,20 @@ clean:
 	rm -f NRO_NAME
 	rm -f SERVICE_ACCOUNT_NAME
 
-lint: lint-sh lint-docker
 
+lint:
+	@$(MAKE) -j .git/hooks/pre-commit lint-sh lint-docker
 lint-sh:
-	find . -type f -name '*.sh' | xargs shellcheck
+ifndef SHELLCHECK
+	$(error "shellcheck is not installed: https://github.com/koalaman/shellcheck")
+endif
+		@find . -type f -name '*.sh' | xargs $(SHELLCHECK) -x
 
 lint-docker:
-	echo "we need to reinsert hadolint here after the bug Ray found gets fixed"
+ifndef DOCKER
+	$(error "docker is not installed: https://docs.docker.com/install/")
+endif
+		@docker run --rm -i hadolint/hadolint < Dockerfile
 
 pull:
 	docker pull gcr.io/planet-4-151612/ubuntu:latest
