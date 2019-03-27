@@ -1,37 +1,19 @@
 SHELL := /bin/bash
 
-GITHUB_SSH_KEY ?= $(HOME)/.ssh/id_rsa
+.EXPORT_ALL_VARIABLES:
 
 NRO ?= $(shell cat NRO_NAME | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
-ifeq ($(strip $(NRO)),)
-$(error NRO name not set, please run ./configure.sh)
-endif
-
 SERVICE_ACCOUNT_NAME ?= $(shell cat SERVICE_ACCOUNT_NAME)
 
-ifeq ("$(wildcard secrets/service-accounts/$(SERVICE_ACCOUNT_NAME).json)","")
-$(error Service account file not found: secrets/service-accounts/$(SERVICE_ACCOUNT_NAME).json)
-endif
-
 include secrets/common
-export $(shell sed 's/=.*//' secrets/common)
 include secrets/env.$(NRO)
-export $(shell sed 's/=.*//' secrets/env.$(NRO))
 
 ###############################################################################
 
 DEFAULT_GOAL: all
 
 .PHONY: all
-all: test prompt init env deploy done
-
-.PHONY: test
-test:
-	env | sort
-
-.PHONY: prompt
-prompt:
-	@prompt.sh
+all: init env deploy done
 
 ################################################################################
 
@@ -105,26 +87,6 @@ delete-bucket:
 .PHONY: deploy
 deploy:
 	trigger_build.sh
-
-################################################################################
-
-.PHONY:
-post-install: helper post-install-nginx post-install-ga-login post-install-update-links
-
-helper:
-	git clone https://github.com/greenpeace/planet4-helper-scripts helper
-
-.PHONY: post-install-nginx
-post-install-nginx:
-	make -C helper nginx-helper
-
-.PHONY: post-install-ga-login
-post-install-ga-login:
-	make -C helper ga-login
-
-.PHONY: post-install-update-links
-post-install-update-links:
-	make -C helper update-links
 
 ################################################################################
 

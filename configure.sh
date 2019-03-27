@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -eauo pipefail
 
+command -v dockerize > /dev/null || {
+  >&2 echo "*** ERROR: Please install dockerize: https://github.com/jwilder/dockerize#installation"
+  exit 1
+}
+command -v gcloud > /dev/null || {
+  >&2 echo " *** ERROR: Please install gcloud: https://cloud.google.com/sdk/install#installation_options"
+  exit 1
+}
+
 pw_length=32
 
 read_properties()
@@ -31,14 +40,14 @@ then
   echo
   echo "---"
   echo
-  echo "Production environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
+  echo "Production environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances?project=planet4-production"
   read -rp "MYSQL_PRODUCTION_ROOT_USER [root] " prod_root_user
   MYSQL_PRODUCTION_ROOT_USER=${prod_root_user:-root}
   read -srp "MYSQL_PRODUCTION_ROOT_PASSWORD " MYSQL_PRODUCTION_ROOT_PASSWORD
   echo
   echo "---"
   echo
-  echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances"
+  echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances?project=planet-4-15161"
   read -rp "MYSQL_DEVELOPMENT_ROOT_USER [root] " dev_root_user
   MYSQL_DEVELOPMENT_ROOT_USER=${dev_root_user:-root}
   read -srp "MYSQL_DEVELOPMENT_ROOT_PASSWORD " MYSQL_DEVELOPMENT_ROOT_PASSWORD
@@ -94,35 +103,81 @@ echo "$nro" > NRO_NAME
 
 nro_sanitised=$(echo "$nro" | tr '[:upper:]' '[:lower:]' | tr -d '[:punct:]' | tr ' ' '-')
 
+# Read values from existing configuration file
 if [[ -f "secrets/env.${nro_sanitised}" ]]
 then
   read_properties "secrets/env.${nro_sanitised}"
+  first_install=false
+else
+  first_install=true
 fi
 
 echo
 echo "---"
 echo
-APP_HOSTPATH=${APP_HOSTPATH-$nro_sanitised}
+MAKE_DEVELOP=${MAKE_DEVELOP:-true}
+read -rp "MAKE_DEVELOP [${MAKE_DEVELOP}] " make_develop
+MAKE_DEVELOP=${make_develop:-$MAKE_DEVELOP}
+echo
+MAKE_RELEASE=${MAKE_RELEASE:-true}
+read -rp "MAKE_RELEASE [${MAKE_RELEASE}] " make_release
+MAKE_RELEASE=${make_release:-$MAKE_RELEASE}
+echo
+MAKE_MASTER=${MAKE_MASTER:-true}
+read -rp "MAKE_MASTER [${MAKE_MASTER}] " make_master
+MAKE_MASTER=${make_master:-$MAKE_MASTER}
+echo
+echo "---"
+echo
+# If first install and this is the first
+if [ $first_install = "true" ]
+then
+  # First install: default to sanitised NRO name
+  APP_HOSTPATH=$nro_sanitised
+  # Else respect whatever value is in there
+fi
+echo "Subdirectory/path for site.  Enter \"\" for blank path."
+app_hostpath=
 read -rp "APP_HOSTPATH [${APP_HOSTPATH}] " app_hostpath
-APP_HOSTPATH=${app_hostpath-$APP_HOSTPATH}
+if [ "$app_hostpath" = '""' ] || [ "$app_hostpath" = "''" ]
+then
+  # A string of "" or '' means blank hostpath
+  echo
+  echo " > Blank hostpath - site will respond at root of domain."
+  APP_HOSTPATH=
+elif [ -n "$app_hostpath" ]
+then
+  # Not blank? Means we want to enter a new value
+  APP_HOSTPATH=${app_hostpath}
+elif [ -z "$app_hostpath" ] && [ -z "${APP_HOSTPATH}" ]
+then
+  echo " > Blank hostpath - site will respond at root of domain."
+fi
+
+echo
+echo "---"
 echo
 DEVELOPMENT_HOSTNAME=${DEVELOPMENT_HOSTNAME:-k8s.p4.greenpeace.org}
 read -rp "DEVELOPMENT_HOSTNAME [${DEVELOPMENT_HOSTNAME}] " hostname_develop
 DEVELOPMENT_HOSTNAME=${hostname_develop:-$DEVELOPMENT_HOSTNAME}
+[ "$MAKE_RELEASE" = "true" ] && {
+  echo
+  RELEASE_HOSTNAME=${RELEASE_HOSTNAME:-release.k8s.p4.greenpeace.org}
+  read -rp "RELEASE_HOSTNAME [${RELEASE_HOSTNAME}] " hostname_release
+  RELEASE_HOSTNAME=${hostname_release:-$RELEASE_HOSTNAME}
+}
+[ "$MAKE_MASTER" = "true" ] && {
+  echo
+  PRODUCTION_HOSTNAME=${PRODUCTION_HOSTNAME:-master.k8s.p4.greenpeace.org}
+  read -rp "PRODUCTION_HOSTNAME [${PRODUCTION_HOSTNAME}] " hostname_production
+  PRODUCTION_HOSTNAME=${hostname_production:-$PRODUCTION_HOSTNAME}
+}
 echo
-RELEASE_HOSTNAME=${RELEASE_HOSTNAME:-release.k8s.p4.greenpeace.org}
-read -rp "RELEASE_HOSTNAME [${RELEASE_HOSTNAME}] " hostname_release
-RELEASE_HOSTNAME=${hostname_release:-$RELEASE_HOSTNAME}
-echo
-PRODUCTION_HOSTNAME=${PRODUCTION_HOSTNAME:-master.k8s.p4.greenpeace.org}
-read -rp "PRODUCTION_HOSTNAME [${PRODUCTION_HOSTNAME}] " hostname_production
-PRODUCTION_HOSTNAME=${hostname_production:-$PRODUCTION_HOSTNAME}
+echo "---"
 echo
 BUILDER_VERSION=${BUILDER_VERSION:-latest}
 read -rp "BUILDER_VERSION [${BUILDER_VERSION}] " builder_version
 BUILDER_VERSION=${builder_version:-$BUILDER_VERSION}
-echo
-echo "---"
 echo
 GITHUB_REPOSITORY_NAME=${GITHUB_REPOSITORY_NAME:-planet4-${nro_sanitised}}
 read -rp "GITHUB_REPOSITORY_NAME [${GITHUB_REPOSITORY_NAME}] " repo_name
@@ -139,18 +194,7 @@ echo
 GITHUB_USER_NAME=${GITHUB_USER_NAME:-$(git config --global user.name || true)}
 read -rp "GITHUB_USER_NAME [${GITHUB_USER_NAME}] " git_name
 GITHUB_USER_NAME=${git_name:-$GITHUB_USER_NAME}
-echo
-MAKE_DEVELOP=${MAKE_DEVELOP:-true}
-read -rp "MAKE_DEVELOP [${MAKE_DEVELOP}] " make_develop
-MAKE_DEVELOP=${make_develop:-$MAKE_DEVELOP}
-echo
-MAKE_RELEASE=${MAKE_RELEASE:-true}
-read -rp "MAKE_RELEASE [${MAKE_RELEASE}] " make_release
-MAKE_RELEASE=${make_release:-$MAKE_RELEASE}
-echo
-MAKE_MASTER=${MAKE_MASTER:-true}
-read -rp "MAKE_MASTER [${MAKE_MASTER}] " make_master
-MAKE_MASTER=${make_master:-$MAKE_MASTER}
+
 echo
 NEWRELIC_APPNAME=${NEWRELIC_APPNAME:-"P4 ${nro}"}
 read -rp "NEWRELIC_APPNAME [${NEWRELIC_APPNAME}] " nr_appname
@@ -172,7 +216,6 @@ read -rp "STATELESS_BUCKET_LOCATION [${STATELESS_BUCKET_LOCATION}] " bucket_loca
 STATELESS_BUCKET_LOCATION=${bucket_location:-$STATELESS_BUCKET_LOCATION}
 echo
 dockerize --template "env.tmpl:secrets/env.${nro_sanitised}"
-cat "secrets/env.${nro_sanitised}"
 echo
 echo "---"
 echo
@@ -207,8 +250,15 @@ then
     exit 1
   fi
 else
-  "Please install 'jq' to validate json files: https://stedolan.github.io/jq/download/"
+  >&2 echo "WARNING: Please install 'jq' to validate json files: https://stedolan.github.io/jq/download/"
 fi
+echo
+echo "---"
+echo
+cat "secrets/env.${nro_sanitised}"
+echo
+echo "---"
+echo
 
 echo "Please confirm configuration looks good and then:"
 echo

@@ -7,8 +7,8 @@ defaults: &defaults
 
 job_environments:
   common_environment: &common_environment
-    CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
     APP_HOSTPATH: {{ .Env.APP_HOSTPATH }}
+    CONTAINER_PREFIX: {{ .Env.CONTAINER_PREFIX }}
     WP_DB_NAME_PREFIX: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}
   develop_environment: &develop_environment
     APP_ENVIRONMENT: development
@@ -60,7 +60,8 @@ job_definitions:
   build_steps: &build_steps
     working_directory: ~/
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}

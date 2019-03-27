@@ -1,51 +1,59 @@
 # Planet 4 NRO Generator
 
-## Requirements:
+## Requirements
 
 1. [Github SSH deploy key](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) at `~/.ssh/id_rsa`
-1. [Github OAUTH token](https://github.com/settings/tokens)
-1. [CircleCI API token](https://circleci.com/account/api)
-1. [gcloud](https://cloud.google.com/sdk/gcloud/) installed in $PATH
-1. [dockerize](https://github.com/jwilder/dockerize/releases) installed in $PATH
-1. `make` installed in $PATH
+2. [Github OAUTH token](https://github.com/settings/tokens)
+3. [CircleCI API token](https://circleci.com/account/api)
+4. [docker](https://docs.docker.com/install/) installed and running
+5. [dockerize](https://github.com/jwilder/dockerize/releases) installed in $PATH
+6. [gcloud](https://cloud.google.com/sdk/gcloud/) installed in $PATH
+7. `make` installed in $PATH
+
+## Dev Requirements
+
+In addition to the above, you'll also need
+
+1. [shellcheck](https://github.com/jwilder/dockerize/releases) installed in $PATH
 
 ## Deploying a New Planet4 CI Pipeline
 
-### Quickstart:
+### Quickstart
 
-Where `${NRO}` is substituted for the NRO path, or slug ( eg: `international` for the site https://www.greenpeace.org/international/ ):
+Where `${NRO}` is substituted for the NRO path, or slug ( eg: `international` for the site <https://www.greenpeace.org/international/> ):
 
-1.  `./configure.sh`
-1.  `make run`
+1. `./configure.sh`
+2. `make run`
 
-### Configure:
+### Configure
 
-#### NRO Variables:
-Variable                  | Default                             | Description
---------------------------|-------------------------------------|---------------------------------------------------------------------------
-APP_HOSTPATH              |                                     | URL stub, eg: `/international`
-CONTAINER_PREFIX          | `planet4-${NRO}`                    | Prefix to name containers in the Helm release
-GITHUB_REPOSITORY_NAME    | `planet4-${NRO}`                    | GitHub repository name, eg: `planet4-international`
-GITHUB_SSH_KEY          | `${HOME}/.ssh/id_rsa`                         | Path to GitHub SSH key
-GITHUB_USER_EMAIL         | `$(git config --global user.email)` | Github email
-GITHUB_USER_NAME         | `$(git config --global user.name)`  | Github username
-MAKE_MASTER               | true                                | Creates production environment resources
-MAKE_RELEASE              | true                                | Creates release environment resources
-MYSQL_PASSWORD            | `(generated)`                       | CloudSQL password
-MYSQL_USERNAME            | `planet4-${NRO}`                    | CloudSQL username (will be created)
-NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring
-STATELESS_BUCKET_LOCATION | us                                  | https://cloud.google.com/storage/docs/bucket-locations#available_locations
+#### NRO Variables
+
+| Variable                  | Default                             | Description                                                                  |
+| ------------------------- | ----------------------------------- | ---------------------------------------------------------------------------- |
+| APP_HOSTPATH              |                                     | URL stub, eg: `/international`                                               |
+| CONTAINER_PREFIX          | `planet4-${NRO}`                    | Prefix to name containers in the Helm release                                |
+| GITHUB_REPOSITORY_NAME    | `planet4-${NRO}`                    | GitHub repository name, eg: `planet4-international`                          |
+| GITHUB_SSH_KEY            | `${HOME}/.ssh/id_rsa`               | Path to GitHub SSH key                                                       |
+| GITHUB_USER_EMAIL         | `$(git config --global user.email)` | Github email                                                                 |
+| GITHUB_USER_NAME          | `$(git config --global user.name)`  | Github username                                                              |
+| MAKE_MASTER               | true                                | Creates production environment resources                                     |
+| MAKE_RELEASE              | true                                | Creates release environment resources                                        |
+| MYSQL_PASSWORD            | `<generated>`                       | CloudSQL password                                                            |
+| MYSQL_USERNAME            | `planet4-${NRO}`                    | CloudSQL username (will be created)                                          |
+| NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring                                   |
+| STATELESS_BUCKET_LOCATION | us                                  | <https://cloud.google.com/storage/docs/bucket-locations#available_locations> |
 
 #### Common secrets:
 
-Secret                          | Default | Description
---------------------------------|---------|-----------------------------------------------------------------
-CIRCLE_TOKEN                    |         | CircleCI token: https://circleci.com/account/api
-GITHUB_OAUTH_TOKEN              |         | Github personal access token: https://github.com/settings/tokens
-MYSQL_PRODUCTION_ROOT_USER      |         | Production environment CloudSQL user with all privileges
-MYSQL_PRODUCTION_ROOT_PASSWORD  |         | Production environment CloudSQL password
-MYSQL_DEVELOPMENT_ROOT_USER     |         | Development environment CloudSQL user with all privileges
-MYSQL_DEVELOPMENT_ROOT_PASSWORD |         | Develop environment CloudSQL password
+| Secret                          | Default | Description                                                        |
+| ------------------------------- | ------- | ------------------------------------------------------------------ |
+| CIRCLE_TOKEN                    |         | CircleCI token: <https://circleci.com/account/api>                 |
+| GITHUB_OAUTH_TOKEN              |         | Github personal access token: <https://github.com/settings/tokens> |
+| MYSQL_PRODUCTION_ROOT_USER      |         | Production environment CloudSQL user with all privileges           |
+| MYSQL_PRODUCTION_ROOT_PASSWORD  |         | Production environment CloudSQL password                           |
+| MYSQL_DEVELOPMENT_ROOT_USER     |         | Development environment CloudSQL user with all privileges          |
+| MYSQL_DEVELOPMENT_ROOT_PASSWORD |         | Develop environment CloudSQL password                              |
 
 ### Deploy
 

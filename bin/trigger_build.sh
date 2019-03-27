@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 
-
-
 eval "$(ssh-agent)"
 ssh-add "${HOME}/.ssh/id_rsa"
 
@@ -40,16 +38,6 @@ then
   echo "Develop deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
   echo
 fi
-
-if [[ "${MAKE_RELEASE,,}" != "true" ]]
-then
-  popd  > /dev/null
-  exit 0
-fi
-
-git checkout -b release/v0.0.1
-
-git push --set-upstream origin release/v0.0.1
 
 git remote show origin
 
