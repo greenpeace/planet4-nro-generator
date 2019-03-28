@@ -215,8 +215,8 @@ jobs:
   create-sync-sql:
     <<: *defaults
     environment:
-      <<: *common_environment
-      <<: *production_environment
+       <<: *common_environment
+       <<: *production_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -234,8 +234,8 @@ jobs:
   sync-sql-to-release:
     <<: *defaults
     environment:
-      <<: *common_environment
-      <<: *release_environment
+       <<: *common_environment
+       <<: *release_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -251,8 +251,8 @@ jobs:
   sync-sql-to-develop:
     <<: *defaults
     environment:
-      <<: *common_environment
-      <<: *develop_environment
+       <<: *common_environment
+       <<: *develop_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
