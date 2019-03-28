@@ -341,11 +341,11 @@ workflows:
   tag:
     jobs:
       - build-tag:
-        <<: *tag_common
+          <<: *tag_common
       - deploy-tag:
-        <<: *tag_common
-        requires:
-          - build-tag
+          <<: *tag_common
+          requires:
+            - build-tag
 
   create-sync-sql:
     jobs:
