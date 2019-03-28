@@ -215,8 +215,8 @@ jobs:
   create-sync-sql:
     <<: *defaults
     environment:
-       <<: *common_environment
-       <<: *production_environment
+      <<: *common_environment
+      <<: *production_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -234,8 +234,8 @@ jobs:
   sync-sql-to-release:
     <<: *defaults
     environment:
-       <<: *common_environment
-       <<: *release_environment
+      <<: *common_environment
+      <<: *release_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -251,8 +251,8 @@ jobs:
   sync-sql-to-develop:
     <<: *defaults
     environment:
-       <<: *common_environment
-       <<: *develop_environment
+      <<: *common_environment
+      <<: *develop_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -302,39 +302,39 @@ workflows:
   develop:
     jobs:
       - build-branch:
-        <<: *develop_common
+          <<: *develop_common
       - deploy-develop:
-        <<: *develop_common
-        requires:
-          - build-branch
+          <<: *develop_common
+          requires:
+            - build-branch
 {{- if isTrue .Env.MAKE_RELEASE }}
       - prepare-release:
-        <<: *develop_common
-        requires:
-          - deploy-develop
+          <<: *develop_common
+          requires:
+            - deploy-develop
 
   release:
     jobs:
       - build-release:
-        <<: *release_common
+          <<: *release_common
       - deploy-release:
-        <<: *release_common
-        requires:
-          - build-release
+          <<: *release_common
+          requires:
+            - build-release
       - notify-promote:
-        <<: *release_common
-        requires:
-          - deploy-release
+          <<: *release_common
+          requires:
+            - deploy-release
       - hold-promote:
-        <<: *release_common
-        type: approval
-        requires:
-          - deploy-release
+          <<: *release_common
+          type: approval
+          requires:
+            - deploy-release
       - finish-release:
-        <<: *release_common
-        requires:
-          - hold-promote
-          - notify-promote
+          <<: *release_common
+          requires:
+            - hold-promote
+            - notify-promote
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
@@ -350,13 +350,13 @@ workflows:
   create-sync-sql:
     jobs:
       - create-sync-sql:
-        <<: *sync_common
+          <<: *sync_common
       - sync-sql-to-release:
-        <<: *sync_common
-        requires:
-          - create-sync-sql
+          <<: *sync_common
+          requires:
+            - create-sync-sql
       - sync-sql-to-develop:
-        <<: *sync_common
-        requires:
-          - sync-sql-to-release
+          <<: *sync_common
+          requires:
+            - sync-sql-to-release
 {{- end }}
