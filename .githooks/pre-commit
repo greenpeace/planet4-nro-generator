@@ -10,6 +10,9 @@
 # Workaround to make Docker happy on WSL
 docker ps >/dev/null || export DOCKER_HOST=tcp://localhost:2375
 
+# Ensure bash scripts are executable (again, WSL hacks)
+find . -type f -name '*.sh' -exec chmod +x {} \;
+
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
 	against=HEAD
@@ -48,6 +51,7 @@ EOF
 	exit 1
 fi
 
+# Lint source code
 make -j lint || exit 1
 
 # If there are whitespace errors, print the offending file names and fail.
