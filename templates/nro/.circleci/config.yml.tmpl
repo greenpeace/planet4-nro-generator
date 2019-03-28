@@ -215,8 +215,8 @@ jobs:
   create-sync-sql:
     <<: *defaults
     environment:
-       <<: *common_environment
-       <<: *production_environment
+      <<: *common_environment
+      <<: *production_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -234,8 +234,8 @@ jobs:
   sync-sql-to-release:
     <<: *defaults
     environment:
-       <<: *common_environment
-       <<: *release_environment
+      <<: *common_environment
+      <<: *release_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -251,8 +251,8 @@ jobs:
   sync-sql-to-develop:
     <<: *defaults
     environment:
-       <<: *common_environment
-       <<: *develop_environment
+      <<: *common_environment
+      <<: *develop_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
@@ -301,36 +301,36 @@ workflows:
   version: 2
   develop:
     jobs:
-    - build-branch:
+      - build-branch:
         <<: *develop_common
-    - deploy-develop:
+      - deploy-develop:
         <<: *develop_common
         requires:
           - build-branch
 {{- if isTrue .Env.MAKE_RELEASE }}
-    - prepare-release:
+      - prepare-release:
         <<: *develop_common
         requires:
           - deploy-develop
 
   release:
     jobs:
-    - build-release:
+      - build-release:
         <<: *release_common
-    - deploy-release:
+      - deploy-release:
         <<: *release_common
         requires:
           - build-release
-    - notify-promote:
+      - notify-promote:
         <<: *release_common
         requires:
           - deploy-release
-    - hold-promote:
+      - hold-promote:
         <<: *release_common
         type: approval
         requires:
           - deploy-release
-    - finish-release:
+      - finish-release:
         <<: *release_common
         requires:
           - hold-promote
@@ -341,21 +341,21 @@ workflows:
   tag:
     jobs:
       - build-tag:
-          <<: *tag_common
+        <<: *tag_common
       - deploy-tag:
-          <<: *tag_common
-          requires:
-            - build-tag
+        <<: *tag_common
+        requires:
+          - build-tag
 
   create-sync-sql:
     jobs:
-    - create-sync-sql:
+      - create-sync-sql:
         <<: *sync_common
-    - sync-sql-to-release:
+      - sync-sql-to-release:
         <<: *sync_common
         requires:
           - create-sync-sql
-    - sync-sql-to-develop:
+      - sync-sql-to-develop:
         <<: *sync_common
         requires:
           - sync-sql-to-release
