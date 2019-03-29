@@ -39,10 +39,4 @@ then
   echo
 fi
 
-git remote show origin
-
 popd > /dev/null
-
-echo
-echo "Release deployment triggered: https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}/tree/release%2Fv0.0.1"
-echo
