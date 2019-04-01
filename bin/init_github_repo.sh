@@ -106,6 +106,36 @@ curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$
 
 # ============================================================================
 #
+# Add collaboror Konstantinos
+#
+endpoint="https://api.github.com/repos/greenpeace/${GITHUB_REPOSITORY_NAME}/collaborators/koyan"
+json='{"permission":"admin"}'
+
+echo
+echo "---------"
+echo
+echo "Adding Konstantinos as owner of the new repo"
+echo
+curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
+
+# ============================================================================
+#
+# Add collaboror Ray
+#
+endpoint="https://api.github.com/repos/greenpeace/${GITHUB_REPOSITORY_NAME}/collaborators/27Bslash6"
+json='{"permission":"admin"}'
+
+echo
+echo "---------"
+echo
+echo "Adding Ray as owner of the new repo"
+echo
+curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
+
+
+
+# ============================================================================
+#
 # Clone new repository and prepare initial content
 #
 echo
