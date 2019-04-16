@@ -13,20 +13,16 @@ include secrets/env.$(NRO)
 DEFAULT_GOAL: all
 
 .PHONY: all
-all: init env deploy done
+all: init env ci done
 
 ################################################################################
 
 .PHONY: init
-init: init-repo init-project init-db init-bucket
+init: init-repo init-db init-bucket
 
 .PHONY: init-repo
 init-repo:
 	init_github_repo.sh
-
-.PHONY: init-project
-init-project:
-	init_circle_project.sh
 
 .PHONY: init-db
 init-db:
@@ -84,8 +80,13 @@ delete-bucket:
 
 ################################################################################
 
-.PHONY: deploy
-deploy:
+.PHONY: ci
+ci: init-ci trigger-build
+
+init-ci:
+	init_circle_project.sh
+
+trigger-build:
 	trigger_build.sh
 
 ################################################################################
@@ -108,3 +109,5 @@ done:
 	@echo "@todo: Configure Google Apps OAUTH credentials"
 	@echo "Visit https://console.cloud.google.com/apis/credentials"
 	@echo
+	@echo "After CI deploys, confirm site responds properly at:"
+	@echo "Visit https://$(DEVELOPMENT_HOSTNAME)/$(APP_HOSTPATH)"
