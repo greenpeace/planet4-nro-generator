@@ -47,7 +47,7 @@ then
   echo
   echo "---"
   echo
-  echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances?project=planet-4-15161"
+  echo "Development environment CloudSQL user with all privileges: https://console.cloud.google.com/sql/instances?project=planet-4-15162"
   read -rp "MYSQL_DEVELOPMENT_ROOT_USER [root] " dev_root_user
   MYSQL_DEVELOPMENT_ROOT_USER=${dev_root_user:-root}
   read -srp "MYSQL_DEVELOPMENT_ROOT_PASSWORD " MYSQL_DEVELOPMENT_ROOT_PASSWORD
