@@ -19,9 +19,7 @@ include secrets/env.$(NRO)
 export $(shell sed 's/=.*//' secrets/env.$(NRO))
 endif
 
-ifneq ($(wildcard secrets/service-accounts/$(NRO).json),)
 SERVICE_ACCOUNT_NAME ?= $(shell cat SERVICE_ACCOUNT_NAME)
-endif
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
