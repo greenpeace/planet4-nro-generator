@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 # Use default SSH key if not set
-GITHUB_SSH_KEY ?= ~/.ssh/id_rsa
+GITHUB_SSH_KEY ?= $(HOME)/.ssh/id_rsa
 
 # convert NRO name to lowercase, remove punctuation, replace space with hyphen
 
