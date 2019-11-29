@@ -3,7 +3,7 @@ version: 2
 
 defaults: &defaults
   docker:
-    - image: gcr.io/planet-4-151612/p4-builder:{{ .Env.BUILDER_VERSION }}
+    - image: greenpeaceinternational/p4-builder:{{ .Env.BUILDER_VERSION }}
 
 job_environments:
   common_environment: &common_environment
