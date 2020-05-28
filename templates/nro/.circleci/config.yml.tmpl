@@ -1,3 +1,4 @@
+{{- if not .Env.IS_CONFIG_UPDATE }}
 ---
 version: 2
 
@@ -55,7 +56,7 @@ job_environments:
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
 {{- end }}
-
+{{- end }}{{/* END if not .Env.IS_CONFIG_UPDATE */}}
 job_definitions:
   build_steps: &build_steps
     working_directory: ~/
@@ -262,6 +263,7 @@ jobs:
       <<: *develop_environment
     <<: *deploy_steps
 
+
 {{- if isTrue .Env.MAKE_RELEASE }}
   deploy-release:
     <<: *defaults
@@ -381,7 +383,24 @@ jobs:
       <<: *common_environment
       <<: *release_environment
     <<: *backstop_compare_steps
+{{- else }}
+  data-sync:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Configure
+          command: |
+            ${HOME}/scripts/activate-gcloud-account.sh
+      - run: /home/circleci/sync_to_test_site.sh
 {{- end }}
+
 
 workflow_definitions:
   develop_common: &develop_common
@@ -427,6 +446,13 @@ workflows:
           <<: *develop_common
           requires:
             - build-branch
+{{- if isTrue .Env.MAKE_RELEASE }}
+{{- else }}
+      - data-sync:
+          <<: *develop_common
+          requires:
+            - deploy-develop
+{{- end }}
       - test-develop:
           <<: *develop_common
           requires:

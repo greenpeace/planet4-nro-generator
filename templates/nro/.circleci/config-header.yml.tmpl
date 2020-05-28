@@ -1,0 +1,18 @@
+version: 2.1
+
+{{- if isTrue .Env.MAKE_RELEASE }}
+parameters:
+  run_release_init:
+    type: boolean
+    default: true
+  run_release_hold:
+    type: boolean
+    default: false
+  run_release_finish:
+    type: boolean
+    default: false
+{{- end }}
+
+defaults: &defaults
+  docker:
+    - image: greenpeaceinternational/p4-builder:latest
