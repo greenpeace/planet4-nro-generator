@@ -440,11 +440,10 @@ workflows:
           <<: *develop_common
       - build-branch:
           <<: *develop_common
-          requires:
-            - backstop-history-develop
       - deploy-develop:
           <<: *develop_common
           requires:
+            - backstop-history-develop
             - build-branch
 {{- if isTrue .Env.MAKE_RELEASE }}
 {{- else }}
@@ -474,11 +473,10 @@ workflows:
           <<: *release_common
       - build-release:
           <<: *release_common
-          requires:
-            - backstop-history-release
       - deploy-release:
           <<: *release_common
           requires:
+            - backstop-history-release
             - build-release
       - test-release:
           <<: *release_common
