@@ -13,7 +13,6 @@ eu-unit
 finland
 greece
 greenland
-handbook
 hongkong
 hungary
 india

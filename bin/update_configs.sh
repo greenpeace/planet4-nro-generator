@@ -10,7 +10,7 @@ readarray -t all_dev_sites < ./dev_sites.txt
 
 # Following sites have develop, release and production environment.
 readarray -t test_prod_sites < ./test_prod_sites.txt
-readarray -t actual_prod_sites < ./test_prod_sites.txt
+readarray -t actual_prod_sites < ./prod_sites.txt
 
 all_prod_sites=("${test_prod_sites[@]}" "${actual_prod_sites[@]}")
 
