@@ -16,7 +16,7 @@ In addition to the above, you'll also need
 
 1. [shellcheck](https://github.com/jwilder/dockerize/releases) installed in $PATH
 
-## Deploying a New Planet4 CI Pipeline
+## Creating a New Planet4 Instance
 
 ### Quickstart
 
@@ -89,3 +89,39 @@ make run delete-yes-i-mean-it
 ```
 
 Look in the Makefile for more commands you can pass to the container.
+
+## Updating common CircleCI configuration on all NROs
+
+Use [this script](https://github.com/greenpeace/planet4-nro-generator/tree/master/bin/update_configs.sh) for centrally managing the CircleCI configuration file on all NROs.
+Each NRO has a `.circleci/artifacts.yml` file which contains the NRO specific parts of the config. Currently, this file
+needs to be created manually, and it needs to match what is in `.circleci/config.yml`. You are currently able to make
+changes to `.circleci/config.yml`, however these changes would be overwritten by what is in `.circleci/artifacts.yml`.
+In order to prevent that a script first runs that checks whether something would be overwritten. If the script detects
+any out of sync files then you need to make the files match for those NROs (by applying the changes made in `config.yml`
+to `artifacts.yml`).
+
+Obviously this is not an ideal workflow, and we will change this later so that it's all in one place.
+
+Apply the new configuration to https://github.com/greenpeace/planet4-nro-generator/blob/master/templates/nro/.circleci/config.yml.tmpl
+and first perform a dry run (first parameter `false`).
+
+```bash
+bin/update_configs.sh false
+```
+
+This will check out the repositories and perform the change, but 
+not commit and push them. You can then inspect whether your changes looks ok and run it on dev sites.
+
+```bash
+bin/update_configs.sh true true
+```
+
+If dev sites look ok then you can first push the changes to one of the "test production" instances (comment out the line including the
+actual production instances) and check if the dev and staging pipelines run well.
+
+```bash
+bin/update_configs.sh true true false
+```
+
+If that's ok you can push the changes
+to production sites (third parameter `true`).
