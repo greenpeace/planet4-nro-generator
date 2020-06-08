@@ -1,3 +1,4 @@
+{{- if not .Env.IS_CONFIG_UPDATE }}
 ---
 version: 2
 
@@ -55,7 +56,7 @@ job_environments:
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
 {{- end }}
-
+{{- end }}{{/* END if not .Env.IS_CONFIG_UPDATE */}}
 job_definitions:
   build_steps: &build_steps
     working_directory: ~/
@@ -88,6 +89,29 @@ job_definitions:
           paths:
             - var
             - src
+
+  test_steps: &test_steps
+    working_directory: ~/project
+    docker:
+      - image: gcr.io/planet-4-151612/p4-codeception:build-12
+      - name: selenium
+        image: selenium/standalone-chrome-debug:3.141.59-oxygen
+    steps:
+      - checkout
+      - run: if [ ! -d "tests" ] || [ ! "$(ls -A tests)" ]; then circleci-agent step halt; fi
+      - run: dockerize -wait tcp://selenium:4444
+      - run: codeceptionify.sh .
+      - run: codecept run --xml=junit.xml --html
+      - run:
+          name: Copy test artifacts
+          when: always
+          command: |
+            mkdir -p /tmp/artifacts
+            cp -r codeception/_output/. /tmp/artifacts
+      - store_test_results:
+          path: /tmp/artifacts
+      - store_artifacts:
+          path: /tmp/artifacts
 
 {{- if isTrue .Env.MAKE_RELEASE }}
   prepare_release: &prepare_release
@@ -140,6 +164,36 @@ job_definitions:
       - run: activate-gcloud-account.sh
       - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
 
+  backstop_history_steps: &backstop_history_steps
+    docker:
+      - image: greenpeaceinternational/planet4-backstop:latest
+    working_directory: /src
+    steps:
+      - run: ./checkout.sh
+      - run: ./mergescenarios.sh
+      - run: mkdir /app/ -p
+      - run: ./makehistory.sh
+      - store_artifacts:
+          path: /app/backstop_data
+      - persist_to_workspace:
+          root: /app
+          paths:
+            - backstop_data
+
+  backstop_compare_steps: &backstop_compare_steps
+    docker:
+      - image: greenpeaceinternational/planet4-backstop:latest
+    working_directory: /src
+    steps:
+      - run: ./checkout.sh
+      - run: ./mergescenarios.sh
+      - run: mkdir /app/ -p
+      - attach_workspace:
+          at: /app
+      - run: ./makecomparison.sh
+      - store_artifacts:
+          path: /app/backstop_data
+
 jobs:
   build-branch:
     <<: *defaults
@@ -188,12 +242,27 @@ jobs:
     <<: *notify_hold
 {{- end }}
 
+  test-develop:
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    <<: *test_steps
+
+{{- if isTrue .Env.MAKE_RELEASE }}
+  test-release:
+    environment:
+      <<: *common_environment
+      <<: *release_environment
+    <<: *test_steps
+{{- end }}
+
   deploy-develop:
     <<: *defaults
     environment:
       <<: *common_environment
       <<: *develop_environment
     <<: *deploy_steps
+
 
 {{- if isTrue .Env.MAKE_RELEASE }}
   deploy-release:
@@ -248,6 +317,17 @@ jobs:
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_to_sync_site.sh release
 
+  notify-sync-auto:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *production_environment
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - run: activate-gcloud-account.sh
+      - run: /home/circleci/notify-sync-admins.sh
+
   sync-sql-to-develop:
     <<: *defaults
     environment:
@@ -264,6 +344,61 @@ jobs:
             ${HOME}/scripts/activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_to_sync_site.sh develop
+
+  backup:
+    docker:
+      - image: greenpeaceinternational/planet4-backup:latest
+    environment:
+      <<: *common_environment
+      <<: *production_environment
+    working_directory: /app
+    steps:
+      - run: echo "backup has been run"
+      - run: pwd
+      - run: ls
+      - run: ./go.sh
+{{- end }}
+
+  backstop-history-develop:
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    <<: *backstop_history_steps
+
+  backstop-compare-develop:
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    <<: *backstop_compare_steps
+
+{{- if isTrue .Env.MAKE_RELEASE }}
+  backstop-history-release:
+    environment:
+      <<: *common_environment
+      <<: *release_environment
+    <<: *backstop_history_steps
+
+  backstop-compare-release:
+    environment:
+      <<: *common_environment
+      <<: *release_environment
+    <<: *backstop_compare_steps
+{{- else }}
+  data-sync:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Configure
+          command: |
+            ${HOME}/scripts/activate-gcloud-account.sh
+      - run: /home/circleci/sync_to_test_site.sh
 {{- end }}
 
 
@@ -301,40 +436,76 @@ workflows:
   version: 2
   develop:
     jobs:
+      - backstop-history-develop:
+          <<: *develop_common
       - build-branch:
           <<: *develop_common
       - deploy-develop:
           <<: *develop_common
           requires:
+            - backstop-history-develop
             - build-branch
+{{- if isTrue .Env.MAKE_RELEASE }}
+{{- else }}
+      - data-sync:
+          <<: *develop_common
+          requires:
+            - deploy-develop
+{{- end }}
+      - test-develop:
+          <<: *develop_common
+          requires:
+            - deploy-develop
+      - backstop-compare-develop:
+          <<: *develop_common
+          requires:
+            - deploy-develop
 {{- if isTrue .Env.MAKE_RELEASE }}
       - prepare-release:
           <<: *develop_common
           requires:
             - deploy-develop
 
-  release:
+  release-init:
+    when: << pipeline.parameters.run_release_init >>
     jobs:
+      - backstop-history-release:
+          <<: *release_common
       - build-release:
           <<: *release_common
       - deploy-release:
           <<: *release_common
           requires:
+            - backstop-history-release
             - build-release
-      - notify-promote:
+      - test-release:
           <<: *release_common
           requires:
             - deploy-release
+      - backstop-compare-release:
+          <<: *release_common
+          requires:
+            - test-release
+
+  release-hold-and-finish:
+    when: << pipeline.parameters.run_release_hold >>
+    jobs:
+      - notify-promote:
+          <<: *release_common
       - hold-promote:
           <<: *release_common
           type: approval
-          requires:
-            - deploy-release
       - finish-release:
           <<: *release_common
           requires:
             - hold-promote
             - notify-promote
+
+  release-finish:
+    when: << pipeline.parameters.run_release_finish >>
+    jobs:
+      - finish-release:
+          <<: *release_common
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
@@ -359,4 +530,59 @@ workflows:
           <<: *sync_common
           requires:
             - sync-sql-to-release
+
+  notify-sync-auto:
+    triggers:
+      - schedule:
+          cron: "10 02 28 * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - notify-sync-auto:
+          context: org-global
+
+  create-sync-auto:
+    triggers:
+      - schedule:
+          cron: "10 01 1 * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - create-sync-sql:
+          context: org-global
+      - sync-sql-to-release:
+          context: org-global
+          requires:
+            - create-sync-sql
+      - sync-sql-to-develop:
+          context: org-global
+          requires:
+            - sync-sql-to-release
+
+  backup:
+    triggers:
+      - schedule:
+          cron: "30 02 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - backup:
+          context: org-global
+
+  backup-manual:
+    jobs:
+      - backup:
+          context: org-global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /backup.*/
+
 {{- end }}
