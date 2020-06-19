@@ -398,7 +398,9 @@ workflows:
           requires:
             - build-develop
             - visualtests-reference-develop
+{{- if isTrue .Env.MAKE_RELEASE }}
             - merge-develop
+{{- end }}
       - test-develop:
           <<: *develop_common
           requires:
