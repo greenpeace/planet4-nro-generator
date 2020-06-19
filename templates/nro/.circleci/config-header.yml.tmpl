@@ -1,16 +1,12 @@
+---
 version: 2.1
 
 {{- if isTrue .Env.MAKE_RELEASE }}
 parameters:
-  run_release_init:
-    type: boolean
-    default: true
-  run_release_hold:
-    type: boolean
-    default: false
-  run_release_finish:
-    type: boolean
-    default: false
+  release_stage:
+    type: enum
+    default: "staging"
+    enum: ["staging", "production"]
 {{- end }}
 
 defaults: &defaults

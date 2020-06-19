@@ -24,7 +24,7 @@ function update_site() {
   generator_hash="$(git rev-parse HEAD)"
   local generator_link="https://github.com/greenpeace/planet4-nro-generator/blob/${generator_hash}/templates/nro/.circleci/config.yml.tmpl"
 
-  git clone https://github.com/greenpeace/"${repo}" --single-branch --branch develop --quiet
+  git clone git@github.com:greenpeace/"${repo}".git --single-branch --branch develop --quiet
 
   if [ ! -f "${repo}"/.circleci/artifacts.yml ]
   then
@@ -49,7 +49,7 @@ function update_site() {
           # If specified push the updated config to the repos.
           if [ "$should_push" = true ]
           then
-            git -C "${repo}" commit -m "New CircleCI conf from ${generator_link}" .circleci/config.yml
+            git -C "${repo}" commit -m "New CircleCI config" -m "Ref: ${generator_link}" .circleci/config.yml
             git -C "${repo}" push
 
             echo "${repo} - Generated and pushed new configuration"
