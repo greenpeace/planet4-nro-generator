@@ -78,6 +78,10 @@ job_definitions:
     docker:
       - image: greenpeaceinternational/planet4-backstop:latest
     working_directory: /src
+    parameters:
+      notify:
+        type: boolean
+        default: false
     steps:
       - run: ./checkout.sh
       - run: ./mergescenarios.sh
@@ -87,6 +91,14 @@ job_definitions:
       - run: ./makecomparison.sh
       - store_artifacts:
           path: /app/backstop_data
+      - when:
+          condition: << parameters.notify >>
+          steps:
+            # Notify p4-activity-ci
+            - slack/status:
+                fail_only: true
+                channel: C015MQGG3KQ
+                webhook: ${SLACK_NRO_WEBHOOK}
 
   build_steps: &build_steps
     working_directory: ~/
@@ -145,11 +157,22 @@ job_definitions:
 
   deploy_steps: &deploy_steps
     working_directory: ~/
+    parameters:
+      notify:
+        type: boolean
+        default: false
     steps:
       - attach_workspace:
           at: /tmp/workspace
       - run: activate-gcloud-account.sh
       - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
+      - when:
+          condition: << parameters.notify >>
+          steps:
+            # Notify p4-activity-ci
+            - slack/status:
+                channel: C015MQGG3KQ
+                webhook: ${SLACK_NRO_WEBHOOK}
 
 jobs:
   visualtests-reference-develop:
@@ -440,6 +463,7 @@ workflows:
             - deploy-staging
       - visualtests-compare:
           <<: *staging_common
+          notify: true
           requires:
             - deploy-staging
 
@@ -470,6 +494,7 @@ workflows:
           <<: *production_common
       - deploy-production:
           <<: *production_common
+          notify: true
           requires:
             - build-production
 
