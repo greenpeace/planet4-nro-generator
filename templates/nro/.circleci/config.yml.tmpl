@@ -165,7 +165,7 @@ job_definitions:
       - attach_workspace:
           at: /tmp/workspace
       - run: activate-gcloud-account.sh
-      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make -j2 deploy
+      - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make deploy
       - when:
           condition: << parameters.notify >>
           steps:
@@ -173,6 +173,16 @@ job_definitions:
             - slack/status:
                 channel: C015MQGG3KQ
                 webhook: ${SLACK_NRO_WEBHOOK}
+
+{{- if isTrue .Env.MAKE_RELEASE }}
+  rollback_steps: &rollback_steps
+    working_directory: ~/
+    steps:
+     - attach_workspace:
+         at: /tmp/workspace
+     - run: activate-gcloud-account.sh
+     - run: make rollback
+{{- end }}
 
 jobs:
   visualtests-reference-develop:
@@ -250,6 +260,13 @@ jobs:
     steps:
       - checkout
       - run: merge-develop.sh
+
+  rollback-staging:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *release_environment
+    <<: *rollback_steps
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
@@ -483,6 +500,20 @@ workflows:
           requires:
             - hold-production
 {{- end }}
+{{- end }}
+
+{{- if isTrue .Env.MAKE_RELEASE }}
+  rollback-staging:
+    when:
+      equal: [ "rollback", << pipeline.parameters.release_stage >> ]
+    jobs:
+      - hold-rollback:
+          <<: *staging_common
+          type: approval
+      - rollback-staging:
+          <<: *staging_common
+          requires:
+            - hold-rollback
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
