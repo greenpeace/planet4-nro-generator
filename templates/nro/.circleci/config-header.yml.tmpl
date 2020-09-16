@@ -5,8 +5,8 @@ version: 2.1
 parameters:
   release_stage:
     type: enum
-    default: "staging"
-    enum: ["staging", "production", "rollback"]
+    default: "release"
+    enum: ["release", "rollback"]
 {{- end }}
 
 defaults: &defaults
