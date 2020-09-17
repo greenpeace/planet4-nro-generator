@@ -9,6 +9,7 @@ colombia
 croatia
 czech-republic
 denmark
+eastasia
 eu-unit
 finland
 greece
@@ -33,6 +34,7 @@ peru
 philippines
 poland
 romania
+slovakia
 slovenia
 southeastasia
 storytelling
