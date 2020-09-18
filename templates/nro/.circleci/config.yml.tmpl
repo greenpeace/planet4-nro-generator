@@ -490,8 +490,10 @@ workflows:
       equal: [ "rollback", << pipeline.parameters.release_stage >> ]
     jobs:
       - hold-rollback:
+          <<: *on_release_tag
           type: approval
       - rollback-staging:
+          <<: *on_release_tag
           requires:
             - hold-rollback
 {{- end }}
