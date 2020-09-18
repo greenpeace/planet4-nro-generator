@@ -27,7 +27,7 @@ function update_site() {
 
   rm -rf "$repo_dir"
 
-  git clone --single-branch --branch develop --quiet git@github.com:greenpeace/"${repo}".git "$repo_dir"
+  git clone --branch develop --quiet git@github.com:greenpeace/"${repo}".git "$repo_dir"
 
   if [ ! -f "${repo_dir}"/.circleci/artifacts.yml ]
   then
