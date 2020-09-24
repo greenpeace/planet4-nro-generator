@@ -170,11 +170,34 @@ job_definitions:
       notify:
         type: boolean
         default: false
+      is_prod:
+        type: boolean
+        default: false
     steps:
       - attach_workspace:
           at: /tmp/workspace
       - run: activate-gcloud-account.sh
       - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make deploy
+      - when:
+          condition: << parameters.is_prod >>
+          steps:
+            - run:
+                name: Initiate finish-staging (approve rollback but it won't really)
+                command: |
+                  url="https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job"
+
+                  # Get workflow details
+                  workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
+                  # Get approval job id
+                  job_id=$(echo "$workflow" | jq -r '.items[] | select(.name=="rollback-staging") | .approval_request_id ')
+
+                  echo "Finishing staging."
+                  echo "Job ID: ${job_id}"
+                  curl \
+                    --header "Content-Type: application/json" \
+                    -u "${CIRCLE_TOKEN}:" \
+                    -X POST \
+                    "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/approve/${job_id}"
       - when:
           condition: << parameters.notify >>
           steps:
@@ -184,13 +207,26 @@ job_definitions:
                 webhook: ${SLACK_NRO_WEBHOOK}
 
 {{- if isTrue .Env.MAKE_RELEASE }}
-  rollback_steps: &rollback_steps
+  finish_staging_steps: &finish_staging_steps
     working_directory: ~/
     steps:
      - attach_workspace:
          at: /tmp/workspace
      - run: activate-gcloud-account.sh
-     - run: make rollback
+     - run:
+         name: Get hold-production status
+         command: |
+           url="https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job"
+           workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
+           echo "$workflow" | jq -r '.items[] | select(.name=="hold-production") | .status ' >/tmp/workspace/prod_status
+     - run:
+         name: Rollback if production wasn't approved
+         command: |
+           if [ $(cat /tmp/workspace/prod_status) == 'success' ]; then
+             echo "No need to rollback, production deploy was initiated so staging should stay at this version."
+             exit 0;
+           fi
+           make rollback
 {{- end }}
 
 jobs:
@@ -270,12 +306,12 @@ jobs:
       - checkout
       - run: merge-develop.sh
 
-  rollback-staging:
+  finish-staging:
     <<: *defaults
     environment:
       <<: *common_environment
       <<: *release_environment
-    <<: *rollback_steps
+    <<: *finish_staging_steps
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
@@ -443,8 +479,6 @@ workflows:
 
 {{- if isTrue .Env.MAKE_RELEASE }}
   release:
-    when:
-      equal: [ "release", << pipeline.parameters.release_stage >> ]
     jobs:
       - visualtests-reference:
           <<: *on_release_tag
@@ -464,6 +498,15 @@ workflows:
           notify: true
           requires:
             - deploy-staging
+      - rollback-staging:
+          <<: *on_release_tag
+          type: approval
+          requires:
+            - deploy-staging
+      - finish-staging:
+          <<: *on_release_tag
+          requires:
+            - rollback-staging
 
 {{- if isTrue .Env.MAKE_MASTER }}
       - hold-production:
@@ -474,24 +517,11 @@ workflows:
       - deploy-production:
           <<: *on_release_tag
           notify: true
+          is_prod: true
           requires:
             - test-staging
             - hold-production
 {{- end }}
-{{- end }}
-
-{{- if isTrue .Env.MAKE_RELEASE }}
-  rollback-staging:
-    when:
-      equal: [ "rollback", << pipeline.parameters.release_stage >> ]
-    jobs:
-      - hold-rollback:
-          <<: *on_release_tag
-          type: approval
-      - rollback-staging:
-          <<: *on_release_tag
-          requires:
-            - hold-rollback
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}

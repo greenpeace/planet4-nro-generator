@@ -1,14 +1,6 @@
 ---
 version: 2.1
 
-{{- if isTrue .Env.MAKE_RELEASE }}
-parameters:
-  release_stage:
-    type: enum
-    default: "release"
-    enum: ["release", "rollback"]
-{{- end }}
-
 defaults: &defaults
   docker:
     - image: greenpeaceinternational/p4-builder:latest
