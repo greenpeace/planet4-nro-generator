@@ -471,15 +471,11 @@ workflows:
           type: approval
           requires:
             - deploy-staging
-      - promote:
-          <<: *on_release_tag
-          requires:
-            - test-staging
-            - visualtests-compare
       - deploy-production:
           <<: *on_release_tag
           notify: true
           requires:
+            - test-staging
             - hold-production
 {{- end }}
 {{- end }}
