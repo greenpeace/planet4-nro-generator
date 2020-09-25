@@ -23,6 +23,8 @@ job_environments:
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
 {{- if isTrue .Env.MAKE_RELEASE }}
+  release_build_env: &release_build_env
+    GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
   release_environment: &release_environment
     APP_ENVIRONMENT: staging
     APP_HOSTNAME: {{ .Env.RELEASE_HOSTNAME }}
@@ -114,10 +116,17 @@ job_definitions:
       - run: |
           if [[ -d source/cache ]]; then ls -al source/cache; fi
       - run: activate-gcloud-account.sh
-      - run: mkdir -p /tmp/workspace/var
-      - run: mkdir -p /tmp/workspace/src
+      - run: mkdir -p /tmp/workspace/var /tmp/workspace/src
       - run: echo "${CIRCLE_BUILD_NUM}" > /tmp/workspace/var/circle-build-num
-      - run: make
+      - run: make test
+      - run: make rewrite
+      - run: make checkout
+      - run: make rewrite-app-repos
+      - run: make copy
+      - run: make bake
+      - run: make persist
+      - run: make build
+      - run: make push
       - run:
           name: Notify failure
           when: on_fail
@@ -161,11 +170,34 @@ job_definitions:
       notify:
         type: boolean
         default: false
+      is_prod:
+        type: boolean
+        default: false
     steps:
       - attach_workspace:
           at: /tmp/workspace
       - run: activate-gcloud-account.sh
       - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make deploy
+      - when:
+          condition: << parameters.is_prod >>
+          steps:
+            - run:
+                name: Initiate finish-staging (approve rollback but it won't really)
+                command: |
+                  url="https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job"
+
+                  # Get workflow details
+                  workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
+                  # Get approval job id
+                  job_id=$(echo "$workflow" | jq -r '.items[] | select(.name=="rollback-staging") | .approval_request_id ')
+
+                  echo "Finishing staging."
+                  echo "Job ID: ${job_id}"
+                  curl \
+                    --header "Content-Type: application/json" \
+                    -u "${CIRCLE_TOKEN}:" \
+                    -X POST \
+                    "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/approve/${job_id}"
       - when:
           condition: << parameters.notify >>
           steps:
@@ -175,13 +207,26 @@ job_definitions:
                 webhook: ${SLACK_NRO_WEBHOOK}
 
 {{- if isTrue .Env.MAKE_RELEASE }}
-  rollback_steps: &rollback_steps
+  finish_staging_steps: &finish_staging_steps
     working_directory: ~/
     steps:
      - attach_workspace:
          at: /tmp/workspace
      - run: activate-gcloud-account.sh
-     - run: make rollback
+     - run:
+         name: Get hold-production status
+         command: |
+           url="https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job"
+           workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
+           echo "$workflow" | jq -r '.items[] | select(.name=="hold-production") | .status ' >/tmp/workspace/prod_status
+     - run:
+         name: Rollback if production wasn't approved
+         command: |
+           if [ $(cat /tmp/workspace/prod_status) == 'success' ]; then
+             echo "No need to rollback, production deploy was initiated so staging should stay at this version."
+             exit 0;
+           fi
+           make rollback
 {{- end }}
 
 jobs:
@@ -231,11 +276,11 @@ jobs:
       <<: *release_environment
     <<: *visualtests_compare_steps
 
-  build-staging:
+  build:
     <<: *defaults
     environment:
       <<: *common_environment
-      <<: *release_environment
+      <<: *release_build_env
     <<: *build_steps
 
   test-staging:
@@ -261,12 +306,12 @@ jobs:
       - checkout
       - run: merge-develop.sh
 
-  rollback-staging:
+  finish-staging:
     <<: *defaults
     environment:
       <<: *common_environment
       <<: *release_environment
-    <<: *rollback_steps
+    <<: *finish_staging_steps
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
@@ -280,24 +325,6 @@ jobs:
       - run:
           name: Approve promotion
           command: promote-to-production.sh "${CIRCLE_WORKFLOW_ID}"
-
-  trigger-production:
-    <<: *defaults
-    environment:
-      <<: *common_environment
-    working_directory: /tmp/workspace/src
-    steps:
-      - checkout
-      - run:
-          name: Trigger production
-          command: trigger-production.sh "${CIRCLE_PROJECT_REPONAME}" "${CIRCLE_TAG}"
-
-  build-production:
-    <<: *defaults
-    environment:
-      <<: *common_environment
-      <<: *production_environment
-    <<: *build_steps
 
   deploy-production:
     <<: *defaults
@@ -402,22 +429,13 @@ jobs:
 {{- end }}
 
 workflow_definitions:
-  develop_common: &develop_common
+  on_develop_commit: &on_develop_commit
     context: org-global
     filters:
       branches:
         only: develop
 {{- if isTrue .Env.MAKE_RELEASE }}
-  staging_common: &staging_common
-    context: org-global
-    filters:
-      branches:
-        ignore: /.*/
-      tags:
-        only: /^v.*/
-{{- end }}
-{{- if isTrue .Env.MAKE_MASTER }}
-  production_common: &production_common
+  on_release_tag: &on_release_tag
     context: org-global
     filters:
       branches:
@@ -430,11 +448,11 @@ workflows:
   develop:
     jobs:
       - visualtests-reference-develop:
-          <<: *develop_common
+          <<: *on_develop_commit
       - build-develop:
-          <<: *develop_common
+          <<: *on_develop_commit
       - deploy-develop:
-          <<: *develop_common
+          <<: *on_develop_commit
           requires:
             - build-develop
             - visualtests-reference-develop
@@ -442,93 +460,71 @@ workflows:
             - merge-develop
 {{- end }}
       - test-develop:
-          <<: *develop_common
+          <<: *on_develop_commit
           requires:
             - deploy-develop
       - visualtests-compare-develop:
-          <<: *develop_common
+          <<: *on_develop_commit
           requires:
             - deploy-develop
 {{- if isTrue .Env.MAKE_RELEASE }}
       - merge-develop:
-          <<: *develop_common
+          <<: *on_develop_commit
 {{- else }}
       - data-sync:
-          <<: *develop_common
+          <<: *on_develop_commit
           requires:
             - deploy-develop
 {{- end }}
 
 {{- if isTrue .Env.MAKE_RELEASE }}
-  staging:
-    unless:
-      not:
-        equal: [ "staging", << pipeline.parameters.release_stage >> ]
+  release:
     jobs:
       - visualtests-reference:
-          <<: *staging_common
-      - build-staging:
-          <<: *staging_common
+          <<: *on_release_tag
+      - build:
+          <<: *on_release_tag
       - deploy-staging:
-          <<: *staging_common
+          <<: *on_release_tag
           requires:
-            - build-staging
+            - build
             - visualtests-reference
       - test-staging:
-          <<: *staging_common
+          <<: *on_release_tag
           requires:
             - deploy-staging
       - visualtests-compare:
-          <<: *staging_common
+          <<: *on_release_tag
           notify: true
           requires:
             - deploy-staging
+      - rollback-staging:
+          <<: *on_release_tag
+          type: approval
+          requires:
+            - deploy-staging
+      - finish-staging:
+          <<: *on_release_tag
+          requires:
+            - rollback-staging
 
 {{- if isTrue .Env.MAKE_MASTER }}
       - hold-production:
-          <<: *staging_common
+          <<: *on_release_tag
           type: approval
           requires:
-            - test-staging
-      - promote:
-          <<: *staging_common
+            - deploy-staging
+      - deploy-production:
+          <<: *on_release_tag
+          notify: true
+          is_prod: true
           requires:
             - test-staging
-            - visualtests-compare
-      - trigger-production:
-          <<: *staging_common
-          requires:
             - hold-production
 {{- end }}
 {{- end }}
 
-{{- if isTrue .Env.MAKE_RELEASE }}
-  rollback-staging:
-    when:
-      equal: [ "rollback", << pipeline.parameters.release_stage >> ]
-    jobs:
-      - hold-rollback:
-          <<: *staging_common
-          type: approval
-      - rollback-staging:
-          <<: *staging_common
-          requires:
-            - hold-rollback
-{{- end }}
-
 {{- if isTrue .Env.MAKE_MASTER }}
-  production:
-    when:
-      equal: [ "production", << pipeline.parameters.release_stage >> ]
-    jobs:
-      - build-production:
-          <<: *production_common
-      - deploy-production:
-          <<: *production_common
-          notify: true
-          requires:
-            - build-production
-
   sync-from-production:
     triggers:
       - schedule:

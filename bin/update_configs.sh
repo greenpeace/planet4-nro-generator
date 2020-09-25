@@ -18,15 +18,18 @@ config_header=./templates/nro/.circleci/config-header.yml.tmpl
 
 function update_site() {
   local repo="planet4-$1"
+  local repo_dir="tmp/update/$repo"
   local is_prod=${2:-false}
   local tmp_config_file="./tmpConfig-$1"
   local generator_hash
   generator_hash="$(git rev-parse HEAD)"
   local generator_link="https://github.com/greenpeace/planet4-nro-generator/blob/${generator_hash}/templates/nro/.circleci/config.yml.tmpl"
 
-  git clone git@github.com:greenpeace/"${repo}".git --single-branch --branch develop --quiet
+  rm -rf "$repo_dir"
 
-  if [ ! -f "${repo}"/.circleci/artifacts.yml ]
+  git clone --branch develop --quiet git@github.com:greenpeace/"${repo}".git "$repo_dir"
+
+  if [ ! -f "${repo_dir}"/.circleci/artifacts.yml ]
   then
       echo "${repo} - DOES NOT have an artifacts file. Cannot generate new configuration"
   else
@@ -38,19 +41,19 @@ function update_site() {
       MAKE_MASTER=$is_prod \
       dockerize \
       -template "./templates/nro/.circleci/config.yml.tmpl:${tmp_config_file}" \
-      -template ${config_header}:"${repo}/config_header.yml"
+      -template ${config_header}:"${repo_dir}/config_header.yml"
 
-      cat "${repo}/config_header.yml" "${repo}/.circleci/artifacts.yml" "${tmp_config_file}" > "${repo}/.circleci/config.yml"
+      cat "${repo_dir}/config_header.yml" "${repo_dir}/.circleci/artifacts.yml" "${tmp_config_file}" > "${repo_dir}/.circleci/config.yml"
 
-      if git -C "${repo}" diff --quiet
+      if git -C "${repo_dir}" diff --quiet
       then
           echo "${repo} - No changes needed"
       else
           # If specified push the updated config to the repos.
           if [ "$should_push" = true ]
           then
-            git -C "${repo}" commit -m "New CircleCI config" -m "Ref: ${generator_link}" .circleci/config.yml
-            git -C "${repo}" push
+            git -C "${repo_dir}" commit -m "New CircleCI config" -m "Ref: ${generator_link}" .circleci/config.yml
+            git -C "${repo_dir}" push
 
             echo "${repo} - Generated and pushed new configuration"
           fi
@@ -62,9 +65,9 @@ function update_site() {
   if [ "$should_push" = true ]
   then
     echo "${repo} - Removing git repo."
-    rm -rf "${repo}"
+    rm -rf "${repo_dir}"
   else
-    echo "${repo} - Dry run, preserving git repo."
+    echo "${repo} - Dry run, preserving git repo at ${repo_dir}."
   fi
 
 }
