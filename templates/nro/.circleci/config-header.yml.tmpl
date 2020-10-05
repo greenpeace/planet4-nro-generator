@@ -1,6 +1,11 @@
 ---
 version: 2.1
 
+parameters:
+  rollback:
+    type: boolean
+    default: false
+
 defaults: &defaults
   docker:
     - image: greenpeaceinternational/p4-builder:latest

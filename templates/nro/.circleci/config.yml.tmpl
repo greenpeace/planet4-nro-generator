@@ -210,23 +210,35 @@ job_definitions:
   finish_staging_steps: &finish_staging_steps
     working_directory: ~/
     steps:
-     - attach_workspace:
-         at: /tmp/workspace
-     - run: activate-gcloud-account.sh
-     - run:
-         name: Get hold-production status
-         command: |
-           url="https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job"
-           workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
-           echo "$workflow" | jq -r '.items[] | select(.name=="hold-production") | .status ' >/tmp/workspace/prod_status
-     - run:
-         name: Rollback if production wasn't approved
-         command: |
-           if [ $(cat /tmp/workspace/prod_status) == 'success' ]; then
-             echo "No need to rollback, production deploy was initiated so staging should stay at this version."
-             exit 0;
-           fi
-           make rollback
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: activate-gcloud-account.sh
+      - run:
+          name: Get hold-production status
+          command: |
+            url="https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job"
+            workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
+            echo "$workflow" | jq -r '.items[] | select(.name=="hold-production") | .status ' >/tmp/workspace/prod_status
+      - run:
+          name: Rollback if production wasn't approved
+          command: |
+            if [ $(cat /tmp/workspace/prod_status) == 'success' ]; then
+              echo "No need to rollback, production deploy was initiated so staging should stay at this version."
+              exit 0;
+            fi
+            make rollback
+{{- end }}
+
+{{- if isTrue .Env.MAKE_MASTER }}
+  rollback_steps: &rollback_steps
+    working_directory: ~/
+    steps:
+      - run: activate-gcloud-account.sh
+      - run: mkdir -p /tmp/workspace/var /tmp/workspace/src
+      - run: make checkout
+      - run: make copy
+      - run: make persist
+      - run: BUILD_TAG="${CIRCLE_TAG}" make deploy
 {{- end }}
 
 jobs:
@@ -312,6 +324,13 @@ jobs:
       <<: *common_environment
       <<: *release_environment
     <<: *finish_staging_steps
+  
+  rollback-staging:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *release_environment
+    <<: *rollback_steps
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
@@ -332,6 +351,13 @@ jobs:
       <<: *common_environment
       <<: *production_environment
     <<: *deploy_steps
+
+  rollback-production:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *production_environment
+    <<: *rollback_steps
 
   create-sync-sql:
     <<: *defaults
@@ -479,6 +505,7 @@ workflows:
 
 {{- if isTrue .Env.MAKE_RELEASE }}
   release:
+    unless: << pipeline.parameters.rollback >>
     jobs:
       - visualtests-reference:
           <<: *on_release_tag
@@ -525,6 +552,21 @@ workflows:
 {{- end }}
 
 {{- if isTrue .Env.MAKE_MASTER }}
+  rollback:
+    when: << pipeline.parameters.rollback >>
+    jobs:
+      - rollback-staging:
+          <<: *on_release_tag
+      - hold-production:
+          <<: *on_release_tag
+          type: approval
+          requires:
+            - rollback-staging
+      - rollback-production:
+          <<: *on_release_tag
+          requires:
+            - hold-production
+
   sync-from-production:
     triggers:
       - schedule:
