@@ -76,10 +76,6 @@ job_definitions:
       - image: greenpeaceinternational/planet4-backstop:latest
         auth: &docker_auth
     working_directory: /src
-    parameters:
-      notify:
-        type: boolean
-        default: false
     steps:
       - run: ./checkout.sh
       - run: ./mergescenarios.sh
@@ -89,14 +85,6 @@ job_definitions:
       - run: ./makecomparison.sh
       - store_artifacts:
           path: /app/backstop_data
-      - when:
-          condition: << parameters.notify >>
-          steps:
-            # Notify p4-activity-ci
-            - slack/status:
-                fail_only: true
-                channel: C015MQGG3KQ
-                webhook: ${SLACK_NRO_WEBHOOK}
 
   build_steps: &build_steps
     working_directory: ~/
@@ -520,7 +508,6 @@ workflows:
             - deploy-staging
       - visualtests-compare:
           <<: *on_release_tag
-          notify: true
           requires:
             - deploy-staging
       - rollback-staging:
