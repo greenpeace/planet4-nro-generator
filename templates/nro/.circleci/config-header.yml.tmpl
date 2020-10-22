@@ -13,7 +13,8 @@ docker_auth: &docker_auth
 defaults: &defaults
   docker:
     - image: greenpeaceinternational/p4-builder:latest
-      auth: &docker_auth
+      auth:
+        <<: *docker_auth
 
 orbs:
   slack: circleci/slack@3.4.2
