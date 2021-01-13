@@ -53,6 +53,42 @@ job_environments:
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
 {{- end }}
 {{- end }}{{/* END if not .Env.IS_CONFIG_UPDATE */}}
+
+commands:
+  approve_job:
+    description: "Approve an on-hold job."
+    parameters:
+      job_name:
+        type: string
+    steps:
+      - run:
+          name: Unhold job "<< parameters.job_name >>"
+          command: |
+            if [ -f /tmp/workspace/approve_workflow ]; then
+              WORKFLOW_ID=$(cat /tmp/workspace/approve_workflow)
+              url="https://circleci.com/api/v2/workflow/$WORKFLOW_ID/job"
+
+              # Get workflow details
+              workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
+              echo $workflow
+              # Get approval job id
+              job_id=$(echo "$workflow" | jq -r '.items[] | select(.name=="<< parameters.job_name >>") | .approval_request_id ')
+              echo $job_id
+
+              if [[ -z $job_id ]]; then
+                echo "Approval ID not found"
+                exit 1
+              fi
+
+              echo "Approving << parameters.job_name >> for workflow $url"
+              echo "Job ID: ${job_id}"
+              curl \
+                --header "Content-Type: application/json" \
+                -u "${CIRCLE_TOKEN}:" \
+                -X POST \
+                "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/approve/${job_id}"
+            fi
+
 job_definitions:
   visualtests_reference_steps: &visualtests_reference_steps
     docker:
@@ -174,6 +210,8 @@ job_definitions:
         type: boolean
         default: false
     steps:
+      - checkout:
+          path: /home/circleci/checkout
       - attach_workspace:
           at: /tmp/workspace
       - run: activate-gcloud-account.sh
@@ -181,26 +219,24 @@ job_definitions:
       - run: make backup
       - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make deploy-helm
       - run: make post-deploy
+      - run:
+          name: Extract workflow from commit message
+          command: |
+            UNHOLD_WORKFLOW_LINE=$(git --git-dir=/home/circleci/checkout/.git log --format=%B -n 1 "$CIRCLE_SHA1" | { grep '^\/unhold ' || true; } )
+            echo "line $UNHOLD_WORKFLOW_LINE"
+            if [[ -n $UNHOLD_WORKFLOW_LINE ]]; then
+              WORKFLOW_ID=${UNHOLD_WORKFLOW_LINE#"/unhold "}
+              echo "$WORKFLOW_ID"
+              echo $WORKFLOW_ID > /tmp/workspace/approve_workflow
+            fi
+      - approve_job:
+          job_name: instance-ready
       - when:
           condition: << parameters.is_prod >>
           steps:
-            - run:
-                name: Initiate finish-staging (approve rollback but it won't really)
-                command: |
-                  url="https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job"
-
-                  # Get workflow details
-                  workflow=$(curl -s -u "${CIRCLE_TOKEN}": -X GET --header "Content-Type: application/json" "$url")
-                  # Get approval job id
-                  job_id=$(echo "$workflow" | jq -r '.items[] | select(.name=="rollback-staging") | .approval_request_id ')
-
-                  echo "Finishing staging."
-                  echo "Job ID: ${job_id}"
-                  curl \
-                    --header "Content-Type: application/json" \
-                    -u "${CIRCLE_TOKEN}:" \
-                    -X POST \
-                    "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/approve/${job_id}"
+            - run: echo $CIRCLE_WORKFLOW_ID > /tmp/workspace/approve_workflow
+            - approve_job:
+                job_name: rollback-staging
       - when:
           condition: << parameters.notify >>
           steps:
