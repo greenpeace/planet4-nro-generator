@@ -347,16 +347,6 @@ jobs:
       <<: *release_environment
     <<: *deploy_steps
 
-  merge-develop:
-    <<: *defaults
-    environment:
-      <<: *common_environment
-      <<: *develop_environment
-    working_directory: /tmp/workspace/src
-    steps:
-      - checkout
-      - run: merge-develop.sh
-
   finish-staging:
     <<: *defaults
     environment:
@@ -500,7 +490,7 @@ workflow_definitions:
     context: org-global
     filters:
       branches:
-        only: develop
+        only: main
 {{- if isTrue .Env.MAKE_RELEASE }}
   on_release_tag: &on_release_tag
     context: org-global
@@ -523,9 +513,6 @@ workflows:
           requires:
             - build-develop
             - visualtests-reference-develop
-{{- if isTrue .Env.MAKE_RELEASE }}
-            - merge-develop
-{{- end }}
       - test-develop:
           <<: *on_develop_commit
           requires:
@@ -535,8 +522,6 @@ workflows:
           requires:
             - deploy-develop
 {{- if isTrue .Env.MAKE_RELEASE }}
-      - merge-develop:
-          <<: *on_develop_commit
 {{- else }}
       - data-sync:
           <<: *on_develop_commit
@@ -545,7 +530,7 @@ workflows:
 {{- end }}
 
 {{- if isTrue .Env.MAKE_RELEASE }}
-  release:
+  production:
     unless: << pipeline.parameters.rollback >>
     jobs:
       - visualtests-reference:
