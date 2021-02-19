@@ -401,7 +401,7 @@ jobs:
       - run:
           name: Configure
           command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
+            activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_create_sync_file.sh
 
@@ -418,7 +418,7 @@ jobs:
       - run:
           name: Configure
           command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
+            activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_to_sync_site.sh release
 
@@ -435,7 +435,7 @@ jobs:
       - run:
           name: Configure
           command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
+            activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
       - run: /home/circleci/sql_to_sync_site.sh develop
 
@@ -481,7 +481,7 @@ jobs:
       - run:
           name: Configure
           command: |
-            ${HOME}/scripts/activate-gcloud-account.sh
+            activate-gcloud-account.sh
       - run: /home/circleci/sync_to_test_site.sh
 {{- end }}
 
