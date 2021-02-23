@@ -1,5 +1,4 @@
 dmptest
-dylandev
 nikosdev
 pablodev
 pieterdev

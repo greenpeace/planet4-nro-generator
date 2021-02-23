@@ -27,7 +27,7 @@ function update_site() {
 
   rm -rf "$repo_dir"
 
-  git clone --branch develop --quiet git@github.com:greenpeace/"${repo}".git "$repo_dir"
+  git clone --branch main --quiet git@github.com:greenpeace/"${repo}".git "$repo_dir"
 
   if [ ! -f "${repo_dir}"/.circleci/artifacts.yml ]
   then
@@ -52,7 +52,7 @@ function update_site() {
           # If specified push the updated config to the repos.
           if [ "$should_push" = true ]
           then
-            git -C "${repo_dir}" commit -m "New CircleCI config" -m "Ref: ${generator_link}" .circleci/config.yml
+            git -C "${repo_dir}" commit -m "[skip ci] New CircleCI config" -m "Ref: ${generator_link}" .circleci/config.yml
             git -C "${repo_dir}" push
 
             echo "${repo} - Generated and pushed new configuration"

@@ -27,7 +27,7 @@ for site in "${sites[@]}"
 do
   repo="planet4-${site}"
   rm -rf "${tmp_dir:?}/${repo}"
-  git -C ${tmp_dir} clone https://github.com/greenpeace/"${repo}" --quiet --single-branch --branch develop
+  git -C ${tmp_dir} clone https://github.com/greenpeace/"${repo}" --quiet --single-branch --branch main
 
   if ! file_contained_in_other_file "$tmp_dir/$repo/.circleci/artifacts.yml" "$tmp_dir/$repo/.circleci/config.yml"
   then
