@@ -161,10 +161,6 @@ job_definitions:
       - run: make persist
       - run: make build
       - run: make push
-      - run:
-          name: Notify failure
-          when: on_fail
-          command: TYPE="Build" notify-job-failure.sh
       - save_cache:
           key: {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
           paths:
@@ -403,7 +399,7 @@ jobs:
           command: |
             activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
-      - run: /home/circleci/sql_create_sync_file.sh
+      - run: sql_create_sync_file.sh
 
   sync-to-staging:
     <<: *defaults
@@ -420,7 +416,7 @@ jobs:
           command: |
             activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
-      - run: /home/circleci/sql_to_sync_site.sh release
+      - run: sql_to_sync_site.sh release
 
   sync-to-develop:
     <<: *defaults
@@ -437,7 +433,7 @@ jobs:
           command: |
             activate-gcloud-account.sh
       - run: echo $SQLPROXY_KEY | base64 -d > key.json
-      - run: /home/circleci/sql_to_sync_site.sh develop
+      - run: sql_to_sync_site.sh develop
 
   notify-sync:
     <<: *defaults
@@ -448,7 +444,7 @@ jobs:
     steps:
       - checkout
       - run: activate-gcloud-account.sh
-      - run: /home/circleci/notify-sync-admins.sh
+      - run: notify-sync-admins.sh
 
   backup:
     docker:
@@ -482,7 +478,7 @@ jobs:
           name: Configure
           command: |
             activate-gcloud-account.sh
-      - run: /home/circleci/sync_to_test_site.sh
+      - run: sync_to_test_site.sh
 {{- end }}
 
 workflow_definitions:
