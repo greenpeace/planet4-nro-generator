@@ -132,7 +132,7 @@ git clone "$clone_url" src
 
 pushd src
 
-git checkout -b develop || git checkout develop
+git checkout -b main || git checkout main
 echo
 echo "---------"
 echo
@@ -181,12 +181,6 @@ echo
 echo "---------"
 echo
 echo "Pushing to $clone_url ..."
-git push --set-upstream origin develop
-
-git checkout -b master
-
-git merge develop --commit
-
-git push --set-upstream origin master
+git push --set-upstream origin main
 
 popd

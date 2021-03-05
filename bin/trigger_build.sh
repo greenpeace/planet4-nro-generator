@@ -16,7 +16,7 @@ fi
 
 if [[ "${MAKE_DEVELOP,,}" = "true" ]]
 then
-  git clone -b develop "git@github.com:${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}.git"
+  git clone -b main "git@github.com:${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}.git"
 
   YEAR=$(date +%Y)
   export YEAR
@@ -30,7 +30,7 @@ then
 
   git commit -m ":robot: Add license"
 
-  git push --set-upstream origin develop
+  git push --set-upstream origin main
 
   git remote show origin
 
