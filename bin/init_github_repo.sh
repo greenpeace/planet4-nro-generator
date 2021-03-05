@@ -132,9 +132,8 @@ echo "Creating files from template ..."
 
 dockerize \
   -template .circleci/config.yml.tmpl:.circleci/config.yml \
--template composer-local.json.tmpl:composer-local.json
-
-yamllint -c /app/.yamllint .circleci/config.yml
+-template composer-local.json.tmpl:composer-local.json \
+-template READNE.md.tmpl:READNE.md
 
 yamllint -c /app/.yamllint .circleci/config.yml
 
