@@ -174,7 +174,7 @@ job_definitions:
   test_steps: &test_steps
     working_directory: ~/project
     docker:
-      - image: gcr.io/planet-4-151612/p4-codeception:build-12
+      - image: greenpeaceinternationa/p4-codeception:latest
       - name: selenium
         image: selenium/standalone-chrome-debug:3.141.59-oxygen
         auth:
