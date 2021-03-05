@@ -75,22 +75,6 @@ fi
 
 # ============================================================================
 #
-# Add collaborator bot
-#
-endpoint="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}/collaborators/${GITHUB_MACHINE_USER}"
-# shellcheck disable=SC2016
-json=$(jq -n --arg permissions "admin" '{ permissions: $permissions }')
-
-echo
-echo "---------"
-echo
-echo "Add github machine user as 'admin' collaborator: ${GITHUB_MACHINE_USER}"
-echo
-curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
-
-
-# ============================================================================
-#
 # Add collaborator team "Planet 4 Developers" (We know the ID is: 2496903)
 #
 endpoint="https://api.github.com/teams/2496903/repos/greenpeace/${GITHUB_REPOSITORY_NAME}"
@@ -149,6 +133,8 @@ echo "Creating files from template ..."
 dockerize \
   -template .circleci/config.yml.tmpl:.circleci/config.yml \
 -template composer-local.json.tmpl:composer-local.json
+
+yamllint -c /app/.yamllint .circleci/config.yml
 
 yamllint -c /app/.yamllint .circleci/config.yml
 
