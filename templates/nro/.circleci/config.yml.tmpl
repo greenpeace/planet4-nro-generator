@@ -596,7 +596,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - create-sync-sql:
           context: org-global
@@ -616,7 +616,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - notify-sync:
           context: org-global
@@ -628,7 +628,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - backup:
           context: org-global
