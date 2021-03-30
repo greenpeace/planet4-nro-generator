@@ -1,4 +1,6 @@
 dmptest
+gutenberg
+training
 nikosdev
 pablodev
 pieterdev
