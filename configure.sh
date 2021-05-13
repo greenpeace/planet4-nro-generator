@@ -157,18 +157,18 @@ fi
 echo
 echo "---"
 echo
-DEVELOPMENT_HOSTNAME=${DEVELOPMENT_HOSTNAME:-k8s.p4.greenpeace.org}
+DEVELOPMENT_HOSTNAME=${DEVELOPMENT_HOSTNAME:-www-dev.greenpeace.org}
 read -rp "DEVELOPMENT_HOSTNAME [${DEVELOPMENT_HOSTNAME}] " hostname_develop
 DEVELOPMENT_HOSTNAME=${hostname_develop:-$DEVELOPMENT_HOSTNAME}
 [ "$MAKE_RELEASE" = "true" ] && {
   echo
-  RELEASE_HOSTNAME=${RELEASE_HOSTNAME:-release.k8s.p4.greenpeace.org}
+  RELEASE_HOSTNAME=${RELEASE_HOSTNAME:-www-stage.greenpeace.org}
   read -rp "RELEASE_HOSTNAME [${RELEASE_HOSTNAME}] " hostname_release
   RELEASE_HOSTNAME=${hostname_release:-$RELEASE_HOSTNAME}
 }
 [ "$MAKE_MASTER" = "true" ] && {
   echo
-  PRODUCTION_HOSTNAME=${PRODUCTION_HOSTNAME:-master.k8s.p4.greenpeace.org}
+  PRODUCTION_HOSTNAME=${PRODUCTION_HOSTNAME:-www.greenpeace.org}
   read -rp "PRODUCTION_HOSTNAME [${PRODUCTION_HOSTNAME}] " hostname_production
   PRODUCTION_HOSTNAME=${hostname_production:-$PRODUCTION_HOSTNAME}
 }
