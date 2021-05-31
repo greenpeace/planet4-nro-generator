@@ -1,8 +1,8 @@
 dmptest
 gutenberg
 training
+test-quizzes
 nikosdev
-pablodev
 pieterdev
 sagardev
 test-atlas
@@ -19,9 +19,13 @@ test-pandora
 test-phobos
 test-phoebe
 test-pluto
+test-proteus
 test-rhea
 test-saturn
+test-sinope
 test-tavros
+test-telesto
 test-titan
+test-umbriel
 test-uranus
 test-venus
