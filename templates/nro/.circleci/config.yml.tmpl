@@ -125,6 +125,8 @@ job_definitions:
       - attach_workspace:
           at: /app
       - run: ./makecomparison.sh
+      - store_test_results:
+          path: /app/backstop_data
       - store_artifacts:
           path: /app/backstop_data
       - when:
