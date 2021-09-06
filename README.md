@@ -41,7 +41,6 @@ Where `${NRO}` is substituted for the NRO path, or slug ( eg: `international` fo
 | MAKE_RELEASE              | true                                | Creates release environment resources                                        |
 | MYSQL_PASSWORD            | `<generated>`                       | CloudSQL password                                                            |
 | MYSQL_USERNAME            | `planet4-${NRO}`                    | CloudSQL username (will be created)                                          |
-| NEWRELIC_APPNAME          | `P4 ${NRO}`                         | Name of application in NewRelic monitoring                                   |
 | STATELESS_BUCKET_LOCATION | us                                  | <https://cloud.google.com/storage/docs/bucket-locations#available_locations> |
 
 #### Common secrets:

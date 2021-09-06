@@ -196,10 +196,6 @@ read -rp "GITHUB_USER_NAME [${GITHUB_USER_NAME}] " git_name
 GITHUB_USER_NAME=${git_name:-$GITHUB_USER_NAME}
 
 echo
-NEWRELIC_APPNAME=${NEWRELIC_APPNAME:-"P4 ${nro}"}
-read -rp "NEWRELIC_APPNAME [${NEWRELIC_APPNAME}] " nr_appname
-NEWRELIC_APPNAME=${nr_appname:-$NEWRELIC_APPNAME}
-echo
 echo "---"
 echo
 MYSQL_USERNAME=${MYSQL_USERNAME:-"planet4-${nro_sanitised:0:8}"}

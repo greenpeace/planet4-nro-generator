@@ -13,7 +13,6 @@ job_environments:
     GCLOUD_CLUSTER: p4-development
     HELM_NAMESPACE: develop
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}
-    NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Development
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
 {{- if isTrue .Env.MAKE_RELEASE }}
@@ -31,7 +30,6 @@ job_environments:
     HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}
     {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
-    NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Release
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
 {{- end }}
@@ -48,7 +46,6 @@ job_environments:
     {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-master
     MIN_REPLICA_COUNT: 2
-    NEWRELIC_APPNAME: {{ .Env.NEWRELIC_APPNAME }} Production
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
 {{- end }}
@@ -353,7 +350,7 @@ jobs:
       <<: *common_environment
       <<: *release_environment
     <<: *finish_staging_steps
-  
+
   rollback-staging:
     <<: *defaults
     environment:

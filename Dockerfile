@@ -64,7 +64,6 @@ ENV APP_HOSTNAME="greenpeace.org" \
     MYSQL_PRODUCTION_ROOT_PASSWORD="" \
     MYSQL_PRODUCTION_ROOT_USER="root" \
     MYSQL_USERNAME="" \
-    NEWRELIC_APPNAME="P4 Change My Name" \
     SERVICE_ACCOUNT_NAME="" \
     SOURCE_CONTENT_BUCKET="planet4-default-content" \
     SOURCE_CONTENT_SQLDUMP="planet4-defaultcontent_wordpress-v0.1.6.sql" \
