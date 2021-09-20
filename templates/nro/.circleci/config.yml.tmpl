@@ -32,6 +32,8 @@ job_environments:
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-release
+    INGRESS_NOTLS: false
+    INGRESS_TLS: false
 {{- end }}
 {{- if isTrue .Env.MAKE_MASTER }}
   production_environment: &production_environment
@@ -48,6 +50,8 @@ job_environments:
     MIN_REPLICA_COUNT: 2
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_master
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless
+    INGRESS_NOTLS: false
+    INGRESS_TLS: false
 {{- end }}
 {{- end }}{{/* END if not .Env.IS_CONFIG_UPDATE */}}
 
