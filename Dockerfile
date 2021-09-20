@@ -21,9 +21,8 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
     rm -fr /tmp/* /var/lib/apt/lists/* && \
     ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts && \
     curl -sSo /app/bin/cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
-    chmod 755 /app/bin/cloud_sql_proxy
-
-RUN pip install --no-cache-dir yamllint==1.14.0
+    chmod 755 /app/bin/cloud_sql_proxy && \
+    pip install --no-cache-dir yamllint==1.14.0
 
 WORKDIR /app
 
