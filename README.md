@@ -1,4 +1,5 @@
 # Planet 4 NRO Generator
+[Read this first](https://support.greenpeace.org/planet4/tech/nro-generation#create-the-environments)
 
 ## Requirements
 
