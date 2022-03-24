@@ -1,4 +1,3 @@
-dmptest
 gutenberg
 training
 test-forms
