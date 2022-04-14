@@ -140,12 +140,6 @@ job_definitions:
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
-      - restore_cache:
-          keys:
-            - {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
-            - {{"composer-v5-{{ .Branch }}-{{ .Revision }}"}}
-            - {{"composer-v5-{{ .Branch }}"}}
-            - composer-v5
       - run: |
           if [[ -d source/cache ]]; then ls -al source/cache; fi
       - run: activate-gcloud-account.sh
@@ -160,10 +154,6 @@ job_definitions:
       - run: make persist
       - run: make build
       - run: make push
-      - save_cache:
-          key: {{"composer-v5-{{ .Branch }}-{{ .Revision }}-{{ .BuildNum }}"}}
-          paths:
-            - source/cache
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
