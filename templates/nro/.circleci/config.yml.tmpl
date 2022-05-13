@@ -404,10 +404,13 @@ jobs:
           at: /tmp/workspace
       - run:
           name: Configure
-          command: |
-            activate-gcloud-account.sh
-      - run: echo $SQLPROXY_KEY | base64 -d > key.json
-      - run: sql_to_sync_site.sh release
+          command: activate-gcloud-account.sh
+      - run:
+          name: Get keys
+          command: echo $SQLPROXY_KEY | base64 -d > key.json
+      - run:
+          name: Sync staging site
+          command: sql_to_sync_site.sh release
 
   sync-to-develop:
     <<: *defaults
@@ -421,21 +424,34 @@ jobs:
           at: /tmp/workspace
       - run:
           name: Configure
-          command: |
-            activate-gcloud-account.sh
-      - run: echo $SQLPROXY_KEY | base64 -d > key.json
-      - run: sql_to_sync_site.sh develop
+          command: activate-gcloud-account.sh
+      - run:
+          name: Check sync flag
+          command: check-data-sync-flag.sh
+      - run:
+          name: Get keys
+          command: echo $SQLPROXY_KEY | base64 -d > key.json
+      - run:
+          name: Sync dev site
+          command: sql_to_sync_site.sh develop
 
   notify-sync:
     <<: *defaults
     environment:
       <<: *common_environment
-      <<: *production_environment
+      <<: *develop_environment
     working_directory: /tmp/workspace/src
     steps:
       - checkout
-      - run: activate-gcloud-account.sh
-      - run: notify-sync-admins.sh
+      - run:
+          name: Configure
+          command: activate-gcloud-account.sh
+      - run:
+          name: Check sync flag
+          command: check-data-sync-flag.sh
+      - run:
+          name: Notify admins
+          command: notify-sync-admins.sh
 
   backup:
     docker:
