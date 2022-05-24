@@ -11,7 +11,11 @@ job_environments:
     CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
     GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
     GCLOUD_CLUSTER: p4-development
+    {{- if .Env.APP_HOSTPATH }}
     HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}-development
+    {{- else }}
+    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}-development
+    {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
@@ -27,7 +31,7 @@ job_environments:
     {{- if .Env.APP_HOSTPATH }}
     HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}-staging
     {{- else }}
-    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}
+    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}-staging
     {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
