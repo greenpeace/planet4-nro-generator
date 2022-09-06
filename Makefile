@@ -94,6 +94,10 @@ endif
 		-v "$(GITHUB_SSH_KEY):/tmp/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
 		p4-build make -f Makefile-run $(RUN_ARGS)
+	SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME) \
+	GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
+	GCP_PRODUCTION_PROJECT="planet4-production" \
+		./bin/clean_service_account_permissions.sh
 
 .PHONY: run-circleci
 run-circleci: NRO_NAME
@@ -109,3 +113,7 @@ endif
 		-e "NRO=$(NRO)" \
 		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
 		p4-build make -f Makefile-run $(RUN_CIRCLECI_ARGS)
+	SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME) \
+	GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
+	GCP_PRODUCTION_PROJECT="planet4-production" \
+		./bin/clean_service_account_permissions.sh

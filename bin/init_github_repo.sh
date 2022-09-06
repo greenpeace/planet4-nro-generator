@@ -25,28 +25,26 @@ function curl_string() {
   HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
   # Pure bash search replace is much slower here than sed
   # shellcheck disable=SC2001
-  HTTP_BODY=$(sed -e 's/HTTPSTATUS\:.*//g' <<< "$HTTP_RESPONSE")
+  HTTP_BODY=$(sed -e 's/HTTPSTATUS\:.*//g' <<<"$HTTP_RESPONSE")
 
   [[ $HTTP_STATUS -eq 201 ]] && return
   [[ $HTTP_STATUS -eq 204 ]] && return
 
-  if [[ 300 -le $HTTP_STATUS && $HTTP_STATUS -lt 400 ]]
-  then
-    >&2 echo "WARNING: HTTP_STATUS $HTTP_STATUS"
+  if [[ 300 -le $HTTP_STATUS && $HTTP_STATUS -lt 400 ]]; then
+    echo >&2 "WARNING: HTTP_STATUS $HTTP_STATUS"
     return
   fi
 
-  if [[ 300 -le $HTTP_STATUS ]]
-  then
-    >&2 echo "ERROR: HTTP_STATUS $HTTP_STATUS"
+  if [[ 300 -le $HTTP_STATUS ]]; then
+    echo >&2 "ERROR: HTTP_STATUS $HTTP_STATUS"
   fi
 
-  >&2 jq -r <<< "$HTTP_BODY"
+  jq >&2 -r <<<"$HTTP_BODY"
 
 }
 
 function get_response_var() {
-  jq -M -r "$1" <<< "$HTTP_BODY"
+  jq -M -r "$1" <<<"$HTTP_BODY"
 }
 
 # ============================================================================
@@ -66,9 +64,8 @@ curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X POST -d "$json" "
 # Extract URL to clone later
 clone_url=$(get_response_var .ssh_url)
 
-if [[ -z "$clone_url" ]] || [[ $clone_url = "null" ]]
-then
-  >&2 echo "WARNING: .ssh_url is '$clone_url', attempting to continue..."
+if [[ -z "$clone_url" ]] || [[ $clone_url = "null" ]]; then
+  echo >&2 "WARNING: .ssh_url is '$clone_url', attempting to continue..."
   curl_string "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}"
   clone_url=$(get_response_var .ssh_url)
 fi
@@ -87,7 +84,6 @@ echo "Adding the team 'Planet 4 Developers' as 'write' collaborator"
 echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
 
-
 # ============================================================================
 #
 # Add collaborator team "Planet4 Admins" (We know the ID is: 3188121)
@@ -101,7 +97,6 @@ echo
 echo "Adding the team 'Planet4 Admins' as 'admin' collaborator"
 echo
 curl_string -H "Authorization: token ${GITHUB_OAUTH_TOKEN}" -X PUT -d "$json" "$endpoint"
-
 
 # ============================================================================
 #
@@ -130,18 +125,24 @@ echo "Creating files from template ..."
 # Clean empty hostpath value
 [[ $APP_HOSTPATH == '""' ]] && APP_HOSTPATH=
 
+tmp_config=.circleci/config.tmp
+
 dockerize \
-  -template .circleci/config.yml.tmpl:.circleci/config.yml \
--template composer-local.json.tmpl:composer-local.json \
--template READNE.md.tmpl:READNE.md
+  -template .circleci/config.yml.tmpl:${tmp_config} \
+  -template .circleci/config-header.yml.tmpl:.circleci/config_header.tmp \
+  -template composer-local.json.tmpl:composer-local.json \
+  -template README.md.tmpl:READNE.md
+
+cat ".circleci/config_header.tmp" "${tmp_config}" >".circleci/config.yml"
 
 yamllint -c /app/.yamllint .circleci/config.yml
 
 echo
 echo "---------"
 echo
-echo "Cleaning .tmpl files ..."
+echo "Cleaning .tmpl and .tmp files ..."
 find . -type f -name '*.tmpl' -delete
+find . -type f -name '*.tmp' -delete
 
 echo
 echo "---------"
@@ -152,8 +153,7 @@ git add .
 echo "---------"
 echo
 echo "Commit ..."
-if ! git commit -m ":robot: init"
-then
+if ! git commit -m ":robot: init"; then
   echo "Nothing to do..."
   exit 0
 fi

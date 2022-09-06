@@ -24,3 +24,4 @@ test-telesto
 test-titan
 test-umbriel
 test-venus
+gustest

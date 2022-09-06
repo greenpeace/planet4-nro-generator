@@ -1,4 +1,5 @@
 # Planet 4 NRO Generator
+
 [Read this first](https://support.greenpeace.org/planet4/tech/nro-generation#create-the-environments)
 
 ## Requirements
@@ -25,6 +26,7 @@ Where `${NRO}` is substituted for the NRO path, or slug ( eg: `international` fo
 
 1. `./configure.sh`
 2. `make run`
+3. You may need to manually create an artifacts.yml file that replicates the environment variables section of the circleci configuration. This is used in the `bin/update_configs.sh` script when there are large changes made to the CI files. See [this](https://jira.greenpeace.org/browse/PLANET-6660) jira ticket for more information.
 
 ### Configure
 
@@ -44,7 +46,7 @@ Where `${NRO}` is substituted for the NRO path, or slug ( eg: `international` fo
 | MYSQL_USERNAME            | `planet4-${NRO}`                    | CloudSQL username (will be created)                                          |
 | STATELESS_BUCKET_LOCATION | us                                  | <https://cloud.google.com/storage/docs/bucket-locations#available_locations> |
 
-#### Common secrets:
+#### Common secrets
 
 | Secret                          | Default | Description                                                        |
 | ------------------------------- | ------- | ------------------------------------------------------------------ |
@@ -102,14 +104,14 @@ to `artifacts.yml`).
 
 Obviously this is not an ideal workflow, and we will change this later so that it's all in one place.
 
-Apply the new configuration to https://github.com/greenpeace/planet4-nro-generator/blob/master/templates/nro/.circleci/config.yml.tmpl
+Apply the new configuration to <https://github.com/greenpeace/planet4-nro-generator/blob/master/templates/nro/.circleci/config.yml.tmpl>
 and first perform a dry run (first parameter `false`).
 
 ```bash
 bin/update_configs.sh false
 ```
 
-This will check out the repositories and perform the change, but 
+This will check out the repositories and perform the change, but
 not commit and push them. You can then inspect whether your changes looks ok and run it on dev sites.
 
 ```bash
