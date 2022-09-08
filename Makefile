@@ -93,11 +93,9 @@ endif
 		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
 		-v "$(GITHUB_SSH_KEY):/tmp/.ssh/id_rsa" \
 		-v "$(PWD)/secrets:/app/secrets" \
+		-v "${HOME}/.config/gcloud/:/root/.config/gcloud/" \
 		p4-build make -f Makefile-run $(RUN_ARGS)
-	SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME) \
-	GCP_DEVELOPMENT_PROJECT="planet-4-151612" \
-	GCP_PRODUCTION_PROJECT="planet4-production" \
-		./bin/clean_service_account_permissions.sh
+	SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)
 
 .PHONY: run-circleci
 run-circleci: NRO_NAME

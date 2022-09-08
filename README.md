@@ -77,6 +77,8 @@ If you don't have a github-ready deploy key at ~/.ssh/id_rsa you may deploy by c
 
 ## Deleting all associated resources
 
+The NRO to be deleted is based upon how you have configured the ./configure.sh script. If you want to delete and existing NRO configure this script with the appropriate variables (using ./configure.sh) and then run the `make run delete-yes-i-mean-it` command.
+
 Pass the Makefile target as a command parameter, eg:
 
 ```bash
