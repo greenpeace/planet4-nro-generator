@@ -23,6 +23,7 @@ gcloud iam service-accounts create "$name" --display-name "$display_name"
 
 gcloud iam service-accounts describe "$service_account" --format=json
 
+# this access is removed at the end of the script
 gcloud projects add-iam-policy-binding "${GCP_DEVELOPMENT_PROJECT}" \
   --member="serviceAccount:$service_account" \
 --role roles/storage.admin
@@ -31,6 +32,7 @@ gcloud projects add-iam-policy-binding "${GCP_DEVELOPMENT_PROJECT}" \
   --member="serviceAccount:$service_account" \
 --role roles/cloudsql.client
 
+# this access is removed at the end of the script
 gcloud projects add-iam-policy-binding "${GCP_PRODUCTION_PROJECT}" \
   --member="serviceAccount:$service_account" \
 --role roles/storage.admin

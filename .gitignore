@@ -4,7 +4,6 @@ bucket/
 helper/
 NRO_NAME
 SERVICE_ACCOUNT_NAME
-*.json
 planet4-*
 
 \.DS_Store

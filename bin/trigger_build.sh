@@ -8,14 +8,12 @@ git config --global user.email "${GITHUB_USER_EMAIL}"
 git config --global user.name "${GITHUB_USER_NAME}"
 git config push.default simple
 
-if [[ -z "${SSH_AGENT_PID:-}" ]]
-then
+if [[ -z "${SSH_AGENT_PID:-}" ]]; then
   eval "$(ssh-agent)"
   ssh-add "${HOME}/.ssh/id_rsa"
 fi
 
-if [[ "${MAKE_DEVELOP,,}" = "true" ]]
-then
+if [[ "${MAKE_DEVELOP,,}" = "true" ]]; then
   git clone -b main "git@github.com:${CIRCLE_PROJECT_USERNAME}/${GITHUB_REPOSITORY_NAME}.git"
 
   YEAR=$(date +%Y)
@@ -24,11 +22,11 @@ then
   dockerize \
     -template "templates/LICENSE.tmpl:${GITHUB_REPOSITORY_NAME}/LICENSE"
 
-  pushd "${GITHUB_REPOSITORY_NAME}"  > /dev/null
+  pushd "${GITHUB_REPOSITORY_NAME}" >/dev/null
 
   git add .
 
-  git commit -m ":robot: Add license"
+  git commit --allow-empty -m ":robot: Add license"
 
   git push --set-upstream origin main
 
@@ -39,4 +37,4 @@ then
   echo
 fi
 
-popd > /dev/null
+popd >/dev/null

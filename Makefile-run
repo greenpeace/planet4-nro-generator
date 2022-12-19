@@ -18,7 +18,7 @@ all: init env ci done
 ################################################################################
 
 .PHONY: init
-init: init-repo init-db init-bucket
+init: init-repo init-db init-bucket clean-service-account-permissions
 
 .PHONY: init-repo
 init-repo:
@@ -32,6 +32,13 @@ init-db:
 init-bucket:
 	init_bucket.sh
 
+.PHONY: clean-service-account-permissions
+clean-service-account-permissions:
+	clean_service_account_permissions.sh
+
+.PHONY: delete-helm-deployments
+delete-helm-deployments:
+	delete_helm_deployments.sh
 ################################################################################
 .PHONY: env
 env: env-ci env-wp
@@ -47,19 +54,19 @@ env-wp:
 ################################################################################
 
 .PHONY: delete-yes-i-mean-it
-delete-yes-i-mean-it:	delete-repo-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it
+delete-yes-i-mean-it:	delete-repo-yes-i-mean-it delete-db-yes-i-mean-it delete-bucket-yes-i-mean-it delete-service-account-yes-i-mean-it delete-helm-deployments
 
 .PHONY: delete-repo-yes-i-mean-it
 delete-repo-yes-i-mean-it:
-	FORCE_DELETE="true" delete_github_repo.sh
+	FORCE_DELETE="false" delete_github_repo.sh
 
 .PHONY: delete-db-yes-i-mean-it
 delete-db-yes-i-mean-it:
-	FORCE_DELETE="true" delete_db.sh
+	FORCE_DELETE="false" delete_db.sh
 
 .PHONY: delete-bucket-yes-i-mean-it
 delete-bucket-yes-i-mean-it:
-	FORCE_DELETE="true" delete_bucket.sh
+	FORCE_DELETE="false" delete_bucket.sh
 
 ################################################################################
 
