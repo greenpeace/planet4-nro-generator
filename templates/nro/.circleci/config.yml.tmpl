@@ -11,7 +11,11 @@ job_environments:
     CLOUDSQL_INSTANCE: {{ .Env.GCP_DEVELOPMENT_CLOUDSQL }}
     GOOGLE_PROJECT_ID: {{ .Env.GCP_DEVELOPMENT_PROJECT }}
     GCLOUD_CLUSTER: p4-development
-    HELM_NAMESPACE: develop
+    {{- if .Env.APP_HOSTPATH }}
+    HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}-development
+    {{- else }}
+    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}-development
+    {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_develop
     WP_STATELESS_BUCKET: {{ .Env.CONTAINER_PREFIX }}-stateless-develop
@@ -25,9 +29,9 @@ job_environments:
     GCLOUD_CLUSTER: {{ .Env.GCP_PRODUCTION_CLUSTER }}
     GOOGLE_PROJECT_ID: {{ .Env.GCP_PRODUCTION_PROJECT }}
     {{- if .Env.APP_HOSTPATH }}
-    HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}
+    HELM_NAMESPACE: {{ .Env.APP_HOSTPATH }}-staging
     {{- else }}
-    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}
+    HELM_NAMESPACE: {{ replace .Env.CONTAINER_PREFIX "planet4-" "" 1 }}-staging
     {{- end }}
     HELM_RELEASE: {{ .Env.CONTAINER_PREFIX }}-release
     WP_DB_NAME: {{ .Env.MYSQL_USERNAME }}_{{ .Env.MYSQL_DATABASE }}_release
@@ -87,59 +91,11 @@ commands:
             fi
 
 job_definitions:
-  visualtests_reference_steps: &visualtests_reference_steps
-    docker:
-      - image: greenpeaceinternational/planet4-backstop:latest
-        auth:
-          <<: *docker_auth
-    working_directory: /src
-    steps:
-      - run: ./checkout.sh
-      - run: ./mergescenarios.sh
-      - run: mkdir /app/ -p
-      - run: ./makehistory.sh
-      - store_artifacts:
-          path: /app/backstop_data
-      - persist_to_workspace:
-          root: /app
-          paths:
-            - backstop_data
-
-  visualtests_compare_steps: &visualtests_compare_steps
-    docker:
-      - image: greenpeaceinternational/planet4-backstop:latest
-        auth:
-          <<: *docker_auth
-    working_directory: /src
-    parameters:
-      notify:
-        type: boolean
-        default: false
-    steps:
-      - run: ./checkout.sh
-      - run: ./mergescenarios.sh
-      - run: mkdir /app/ -p
-      - attach_workspace:
-          at: /app
-      - run: ./makecomparison.sh
-      - store_test_results:
-          path: /app/backstop_data
-      - store_artifacts:
-          path: /app/backstop_data
-      - when:
-          condition: << parameters.notify >>
-          steps:
-            # Notify p4-activity-ci
-            - slack/status:
-                fail_only: true
-                channel: C015MQGG3KQ
-                webhook: ${SLACK_NRO_WEBHOOK}
-
   build_steps: &build_steps
     working_directory: ~/
     steps:
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
       - run: |
           if [[ -d source/cache ]]; then ls -al source/cache; fi
       - run: activate-gcloud-account.sh
@@ -160,33 +116,6 @@ job_definitions:
             - var
             - src
 
-  test_steps: &test_steps
-    working_directory: ~/project
-    docker:
-      - image: greenpeaceinternational/p4-codeception:latest
-        auth:
-          <<: *docker_auth
-      - name: selenium
-        image: selenium/standalone-chrome-debug:3.141.59-oxygen
-        auth:
-          <<: *docker_auth
-    steps:
-      - checkout
-      - run: if [ ! -d "tests" ] || [ ! "$(ls -A tests)" ]; then circleci-agent step halt; fi
-      - run: dockerize -wait tcp://selenium:4444
-      - run: codeceptionify.sh .
-      - run: codecept run --xml=junit.xml --html
-      - run:
-          name: Copy test artifacts
-          when: always
-          command: |
-            mkdir -p /tmp/artifacts
-            cp -r codeception/_output/. /tmp/artifacts
-      - store_test_results:
-          path: /tmp/artifacts
-      - store_artifacts:
-          path: /tmp/artifacts
-
   deploy_steps: &deploy_steps
     working_directory: ~/
     parameters:
@@ -205,6 +134,10 @@ job_definitions:
       - run: make prepare-helm
       - run: make backup
       - run: BUILD_TAG=build-$(cat /tmp/workspace/var/circle-build-num) make deploy-helm
+{{- if isTrue .Env.MAKE_RELEASE }}
+{{- else }}
+      - run: make reset
+{{- end }}
       - run: make post-deploy
       - run:
           name: Extract workflow from commit message
@@ -268,30 +201,12 @@ job_definitions:
 {{- end }}
 
 jobs:
-  visualtests-reference-develop:
-    environment:
-      <<: *common_environment
-      <<: *develop_environment
-    <<: *visualtests_reference_steps
-
-  visualtests-compare-develop:
-    environment:
-      <<: *common_environment
-      <<: *develop_environment
-    <<: *visualtests_compare_steps
-
   build-develop:
     <<: *defaults
     environment:
       <<: *common_environment
       <<: *develop_environment
     <<: *build_steps
-
-  test-develop:
-    environment:
-      <<: *common_environment
-      <<: *develop_environment
-    <<: *test_steps
 
   deploy-develop:
     <<: *defaults
@@ -306,13 +221,51 @@ jobs:
     environment:
       <<: *common_environment
       <<: *release_environment
-    <<: *visualtests_reference_steps
+    docker:
+      - image: greenpeaceinternational/planet4-backstop:latest
+        auth:
+          <<: *docker_auth
+    working_directory: /src
+    steps:
+      - run: ./checkout.sh
+      - run: ./mergescenarios.sh
+      - run: mkdir /app/ -p
+      - run: ./makehistory.sh
+      - store_artifacts:
+          path: /app/backstop_data
+      - persist_to_workspace:
+          root: /app
+          paths:
+            - backstop_data
 
   visualtests-compare:
     environment:
       <<: *common_environment
       <<: *release_environment
-    <<: *visualtests_compare_steps
+    docker:
+      - image: greenpeaceinternational/planet4-backstop:latest
+        auth:
+          <<: *docker_auth
+    working_directory: /src
+    parameters:
+      notify:
+        type: boolean
+        default: false
+    steps:
+      - run: ./checkout.sh
+      - run: ./mergescenarios.sh
+      - run: mkdir /app/ -p
+      - attach_workspace:
+          at: /app
+      - run: ./makecomparison.sh
+      - store_test_results:
+          path: /app/backstop_data
+      - store_artifacts:
+          path: /app/backstop_data
+      - slack/status:
+          fail_only: true
+          channel: C015MQGG3KQ
+          webhook: ${SLACK_NRO_WEBHOOK}
 
   build:
     <<: *defaults
@@ -325,7 +278,31 @@ jobs:
     environment:
       <<: *common_environment
       <<: *release_environment
-    <<: *test_steps
+    working_directory: ~/project
+    docker:
+      - image: greenpeaceinternational/p4-codeception:latest
+        auth:
+          <<: *docker_auth
+      - name: selenium
+        image: selenium/standalone-chrome-debug:3.141.59-oxygen
+        auth:
+          <<: *docker_auth
+    steps:
+      - checkout
+      - run: if [ ! -d "tests" ] || [ ! "$(ls -A tests)" ]; then circleci-agent step halt; fi
+      - run: dockerize -wait tcp://selenium:4444
+      - run: codeceptionify.sh .
+      - run: codecept run --xml=junit.xml --html
+      - run:
+          name: Copy test artifacts
+          when: always
+          command: |
+            mkdir -p /tmp/artifacts
+            cp -r codeception/_output/. /tmp/artifacts
+      - store_test_results:
+          path: /tmp/artifacts
+      - store_artifacts:
+          path: /tmp/artifacts
 
   deploy-staging:
     <<: *defaults
@@ -469,25 +446,6 @@ jobs:
       - run: ./go.sh
 {{- end }}
 
-{{- if isTrue .Env.MAKE_RELEASE }}
-{{- else }}
-  data-sync:
-    <<: *defaults
-    environment:
-      <<: *common_environment
-      <<: *develop_environment
-    working_directory: /tmp/workspace/src
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Configure
-          command: |
-            activate-gcloud-account.sh
-      - run: sync_to_test_site.sh
-{{- end }}
-
 workflow_definitions:
   on_develop_commit: &on_develop_commit
     context: org-global
@@ -507,30 +465,12 @@ workflow_definitions:
 workflows:
   develop:
     jobs:
-      - visualtests-reference-develop:
-          <<: *on_develop_commit
       - build-develop:
           <<: *on_develop_commit
       - deploy-develop:
           <<: *on_develop_commit
           requires:
             - build-develop
-            - visualtests-reference-develop
-      - test-develop:
-          <<: *on_develop_commit
-          requires:
-            - deploy-develop
-      - visualtests-compare-develop:
-          <<: *on_develop_commit
-          requires:
-            - deploy-develop
-{{- if isTrue .Env.MAKE_RELEASE }}
-{{- else }}
-      - data-sync:
-          <<: *on_develop_commit
-          requires:
-            - deploy-develop
-{{- end }}
 
 {{- if isTrue .Env.MAKE_RELEASE }}
   production:
