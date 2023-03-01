@@ -216,6 +216,59 @@ jobs:
     <<: *deploy_steps
 
 {{- if isTrue .Env.MAKE_RELEASE }}
+{{- else }}
+  create-test-user:
+    working_directory: ~/
+    docker:
+      - image: greenpeaceinternational/p4-builder:latest
+        auth:
+          <<: *docker_auth
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+      WORKFLOW_ID: << pipeline.parameters.unhold >>
+    steps:
+      - checkout:
+          path: /home/circleci/checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: activate-gcloud-account.sh
+      - run: make prepare-helm
+      - run:
+          name: Create test user
+          command: /home/circleci/bin/test_account_add.sh
+      - run:
+          name: Unhold e2e test job
+          command: |
+            if [[ -n $WORKFLOW_ID ]]; then
+              echo "$WORKFLOW_ID"
+              echo $WORKFLOW_ID > /tmp/workspace/approve_workflow
+            fi
+      - approve_job:
+          job_name: test-user-ready
+
+  delete-test-user:
+    working_directory: ~/
+    docker:
+      - image: greenpeaceinternational/p4-builder:latest
+        auth:
+          <<: *docker_auth
+    environment:
+      <<: *common_environment
+      <<: *develop_environment
+    steps:
+      - checkout:
+          path: /home/circleci/checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: activate-gcloud-account.sh
+      - run: make prepare-helm
+      - run:
+          name: Delete test user
+          command: /home/circleci/bin/test_account_remove.sh
+{{- end }}
+
+{{- if isTrue .Env.MAKE_RELEASE }}
 
   visualtests-reference:
     environment:
@@ -464,6 +517,7 @@ workflow_definitions:
 
 workflows:
   develop:
+    when: << pipeline.parameters.run_develop >>
     jobs:
       - build-develop:
           <<: *on_develop_commit
@@ -472,6 +526,21 @@ workflows:
           requires:
             - build-develop
 
+{{- if isTrue .Env.MAKE_RELEASE }}
+{{- else }}
+  create-test-user:
+    when: << pipeline.parameters.run_create_test_user >>
+    jobs:
+      - create-test-user:
+          context: org-global
+
+  delete-test-user:
+    when: << pipeline.parameters.run_delete_test_user >>
+    jobs:
+      - delete-test-user:
+          context: org-global
+
+{{- end }}
 {{- if isTrue .Env.MAKE_RELEASE }}
   production:
     unless: << pipeline.parameters.rollback >>

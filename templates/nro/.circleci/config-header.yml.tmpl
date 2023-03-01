@@ -6,6 +6,25 @@ parameters:
     type: boolean
     default: false
 
+  run_develop:
+    default: true
+    type: boolean
+
+{{- if isTrue .Env.MAKE_RELEASE }}
+{{- else }}
+  run_create_test_user:
+    default: false
+    type: boolean
+
+  run_delete_test_user:
+    default: false
+    type: boolean
+
+  unhold:
+    default: ""
+    type: string
+{{- end }}
+
 docker_auth: &docker_auth
   username: $DOCKERHUB_USERNAME
   password: $DOCKERHUB_PASSWORD
