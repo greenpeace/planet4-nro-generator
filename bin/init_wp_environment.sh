@@ -15,9 +15,9 @@ if \
 [ -z "${WP_SECURE_AUTH_SALT}" ]
 then
   echo "Generating Wordpress keys & salts from https://api.wordpress.org/secret-key/1.1/salt/..."
-  keys=$(curl --connect-timeout 5 \
-       --max-time 10 \
-       --retry 5 \
+  keys=$(curl --connect-timeout 20 \
+       --max-time 20 \
+       --retry 10 \
        --retry-max-time 60 \
   https://api.wordpress.org/secret-key/1.1/salt/)
 
