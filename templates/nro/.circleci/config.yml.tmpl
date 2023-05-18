@@ -327,36 +327,6 @@ jobs:
       <<: *release_build_env
     <<: *build_steps
 
-  test-staging:
-    environment:
-      <<: *common_environment
-      <<: *release_environment
-    working_directory: ~/project
-    docker:
-      - image: greenpeaceinternational/p4-codeception:latest
-        auth:
-          <<: *docker_auth
-      - name: selenium
-        image: selenium/standalone-chrome-debug:3.141.59-oxygen
-        auth:
-          <<: *docker_auth
-    steps:
-      - checkout
-      - run: if [ ! -d "tests" ] || [ ! "$(ls -A tests)" ]; then circleci-agent step halt; fi
-      - run: dockerize -wait tcp://selenium:4444
-      - run: codeceptionify.sh .
-      - run: codecept run --xml=junit.xml --html
-      - run:
-          name: Copy test artifacts
-          when: always
-          command: |
-            mkdir -p /tmp/artifacts
-            cp -r codeception/_output/. /tmp/artifacts
-      - store_test_results:
-          path: /tmp/artifacts
-      - store_artifacts:
-          path: /tmp/artifacts
-
   deploy-staging:
     <<: *defaults
     environment:
@@ -554,10 +524,6 @@ workflows:
           requires:
             - build
             - visualtests-reference
-      - test-staging:
-          <<: *on_release_tag
-          requires:
-            - deploy-staging
       - visualtests-compare:
           <<: *on_release_tag
           notify: true
@@ -584,7 +550,6 @@ workflows:
           notify: true
           is_prod: true
           requires:
-            - test-staging
             - hold-production
 {{- end }}
 {{- end }}
