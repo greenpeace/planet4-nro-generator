@@ -1,6 +1,5 @@
 gutenberg
 training
-test-forms
 test-atlas
 test-deimos
 test-iocaste
