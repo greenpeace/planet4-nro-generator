@@ -4,18 +4,18 @@ FROM gcr.io/planet-4-151612/ubuntu:latest
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3008
-RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+RUN echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
   curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
   apt-get update && \
   apt-get install -y -q --no-install-recommends \
   git-core \
-  google-cloud-sdk \
-  google-cloud-sdk-gke-gcloud-auth-plugin \
+  google-cloud-cli \
+  google-cloud-cli-gke-gcloud-auth-plugin \
   jq \
   make \
   mysql-client \
   python-setuptools \
-  python-pip \
+  python3-pip \
   rsync \
   unzip \
   && \
@@ -23,7 +23,7 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s
   ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts && \
   curl -sSo /app/bin/cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && \
   chmod 755 /app/bin/cloud_sql_proxy && \
-  pip install --no-cache-dir yamllint==1.14.0
+  pip3 install --no-cache-dir yamllint==1.14.0
 
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" \
   && chmod +x ./kubectl \
