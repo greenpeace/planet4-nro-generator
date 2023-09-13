@@ -131,7 +131,7 @@ dockerize \
   -template .circleci/config.yml.tmpl:${tmp_config} \
   -template .circleci/config-header.yml.tmpl:.circleci/config_header.tmp \
   -template composer-local.json.tmpl:composer-local.json \
-  -template README.md.tmpl:READNE.md
+  -template README.md.tmpl:README.md
 
 cat ".circleci/config_header.tmp" "${tmp_config}" >".circleci/config.yml"
 
