@@ -32,6 +32,10 @@ init-db:
 init-bucket:
 	init_bucket.sh
 
+.PHONY: add-service-account-permissions
+add-service-account-permissions:
+	add_service_account_permissions.sh
+
 .PHONY: clean-service-account-permissions
 clean-service-account-permissions:
 	clean_service_account_permissions.sh
