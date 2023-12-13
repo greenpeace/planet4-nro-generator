@@ -202,7 +202,10 @@ job_definitions:
 
 jobs:
   build-develop:
-    <<: *defaults
+    docker:
+      - image: greenpeaceinternational/p4-builder:php8.1
+        auth:
+          <<: *docker_auth
     environment:
       <<: *common_environment
       <<: *develop_environment
