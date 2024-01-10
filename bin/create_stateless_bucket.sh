@@ -17,26 +17,26 @@ function init_bucket() {
   set +e
 
   # Create bucket if it doesn't exist
-  gsutil ls -p "${PROJECT}" "gs://${BUCKET}" || gsutil mb -l "${STATELESS_BUCKET_LOCATION}" -p "${PROJECT}" "gs://${BUCKET}"
+  gcloud storage ls --project "${PROJECT}" "gs://${BUCKET}" || gcloud storage buckets create --project "${PROJECT}" -l "${STATELESS_BUCKET_LOCATION}" "gs://${BUCKET}"
 
   # Set public read access
-  gsutil -m iam -R ch allUsers:objectViewer "gs://${BUCKET}"
+  gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" --member=allUsers --role=roles/storage.objectViewer
 
   # Set owner
-  gsutil -m iam -R ch "serviceAccount:$(jq -r '.client_email' "secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json"):objectAdmin" "gs://${BUCKET}"
+  gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" --member=serviceAccount:"$(jq -r '.client_email' "secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json")" --role=roles/storage.objectAdmin
 
   # FIXME define NRO_LABEL variable instead of relying on APP_HOSTPATH
-  gsutil label ch -l "nro:${APP_HOSTPATH}" "gs://${BUCKET}"
-  gsutil label ch -l "environment:${ENVIRONMENT}" "gs://${BUCKET}"
+  gcloud storage buckets update "gs://${BUCKET}" \
+    --update-labels=environment="${ENVIRONMENT}",nro="${APP_HOSTPATH}"
 
   # Sync the default content to the new bucket
-  gsutil -m rsync -r -d "gs://${SOURCE_CONTENT_BUCKET}/uploads/" "gs://${BUCKET}"
+  gcloud storage rsync "gs://${SOURCE_CONTENT_BUCKET}/uploads/" "gs://${BUCKET}" --recursive --delete-unmatched-destination-objects
 
   okay=1
   set -e
 }
 
-# Solves Google Cloud Shell + gsutil connection errors
+# Solves Google Cloud Shell + gcloud connection errors
 okay=0
 i=0
 retry=3

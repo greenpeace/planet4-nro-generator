@@ -13,7 +13,7 @@ fi
 create_image_backup_bucket() {
 
   IMAGE_BACKUP_BUCKET_NAME=${BUCKET}_images_backup
-  gsutil ls -p "${GOOGLE_PROJECT_ID}" "gs://${IMAGE_BACKUP_BUCKET_NAME}" >/dev/null && return
+  gcloud storage ls --project "${GOOGLE_PROJECT_ID}" "gs://${IMAGE_BACKUP_BUCKET_NAME}" >/dev/null && return
 
   # Make image backup bucket if it doesn't exist
 
@@ -27,23 +27,18 @@ create_image_backup_bucket() {
   echo " * Purpose: Backup of bucket:  gs://${BUCKET}"
 
 
-  gsutil mb -l "${STATELESS_BUCKET_LOCATION}" -p "${GOOGLE_PROJECT_ID}" "gs://${IMAGE_BACKUP_BUCKET_NAME}"
-  gsutil -m iam -R ch "serviceAccount:$(jq -r '.client_email' "secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json"):objectAdmin" "gs://${IMAGE_BACKUP_BUCKET_NAME}"
+  gcloud storage buckets create --project "${GOOGLE_PROJECT_ID}" -l "${STATELESS_BUCKET_LOCATION}" "gs://${IMAGE_BACKUP_BUCKET_NAME}"
+  gcloud storage buckets add-iam-policy-binding "gs://${IMAGE_BACKUP_BUCKET_NAME}" --member=serviceAccount:"$(jq -r '.client_email' "secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json")" --role=roles/storage.objectAdmin
   # Apply labels to image backups bucket
-  gsutil label ch \
-    -l "app:planet4" \
-    -l "environment:production" \
-    -l "component:images_backup" \
-    -l "nro:${APP_HOSTPATH}" \
-    "gs://${IMAGE_BACKUP_BUCKET_NAME}"
-
+  gcloud storage buckets update "gs://${IMAGE_BACKUP_BUCKET_NAME}" \
+    --update-labels=app=planet4,environment=production,component=images_backup,nro="${APP_HOSTPATH}"
 }
 
 
 create_db_backup_bucket() {
 
   DB_BACKUP_BUCKET_NAME=${BUCKET}_db_backup
-  gsutil ls -p "${GOOGLE_PROJECT_ID}" "gs://${DB_BACKUP_BUCKET_NAME}" >/dev/null && return
+  gcloud storage ls --project "${GOOGLE_PROJECT_ID}" "gs://${DB_BACKUP_BUCKET_NAME}" >/dev/null && return
 
   # Make image backup bucket if it doesn't exist
   if [ -z ${APP_ENVIRONMENT+x} ]; then
@@ -60,26 +55,21 @@ create_db_backup_bucket() {
   echo " * Purpose: Backup of bucket:  gs://${BUCKET}"
 
 
-  gsutil mb -l "${STATELESS_BUCKET_LOCATION}" -p "${GOOGLE_PROJECT_ID}" "gs://${DB_BACKUP_BUCKET_NAME}"
-  gsutil -m iam -R ch "serviceAccount:$(jq -r '.client_email' "secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json"):objectAdmin" "gs://${DB_BACKUP_BUCKET_NAME}"
-
+  gcloud storage buckets create --project "${GOOGLE_PROJECT_ID}" -l "${STATELESS_BUCKET_LOCATION}" "gs://${DB_BACKUP_BUCKET_NAME}"
+  gcloud storage buckets add-iam-policy-binding "gs://${DB_BACKUP_BUCKET_NAME}" --member=serviceAccount:"$(jq -r '.client_email' "secrets/service-accounts/${SERVICE_ACCOUNT_NAME}.json")" --role=roles/storage.objectAdmin
   # Apply labels to image backups bucket
-  gsutil label ch \
-    -l "app:planet4" \
-    -l "environment:production" \
-    -l "component:db_backup" \
-    -l "nro:${APP_HOSTPATH}" \
-    "gs://${DB_BACKUP_BUCKET_NAME}"
+  gcloud storage buckets update "gs://${DB_BACKUP_BUCKET_NAME}" \
+    --update-labels=app=planet4,environment=production,component=images_backup,nro="${APP_HOSTPATH}"
 
   # Allow versioning of database files (use storage versioning to keep multiple copies of the SQL!)
-  gsutil versioning set on "gs://${DB_BACKUP_BUCKET_NAME}"
-  gsutil lifecycle set /app/lifecycle-db.json "gs://${DB_BACKUP_BUCKET_NAME}"
+  gcloud storage buckets update "gs://${DB_BACKUP_BUCKET_NAME}" --versioning
+  gcloud storage buckets update "gs://${DB_BACKUP_BUCKET_NAME}" --lifecycle-file=/app/lifecycle-db.json
 }
 
 # Set the normal images bucket to have versioning so that deleted images get retained
-gsutil versioning set on "gs://${BUCKET}"
+gcloud storage buckets update "gs://${_BUCKET}" --versioning
 
-# Retrying here because gsutil is flaky, connection resets often
+# Retrying here because gcloud storage is flaky, connection resets often
 echo "Create GCS buckets to store backup data ..."
 okay=0
 i=0
