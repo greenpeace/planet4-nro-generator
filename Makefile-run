@@ -18,7 +18,7 @@ all: init env ci done
 ################################################################################
 
 .PHONY: init
-init: init-repo init-db init-bucket clean-service-account-permissions
+init: init-repo add-service-account-permissions init-db init-bucket clean-service-account-permissions
 
 .PHONY: init-repo
 init-repo:

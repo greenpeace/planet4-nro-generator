@@ -24,7 +24,7 @@ In addition to the above, you'll also need
 
 #### Checklist
 
-- Create an admin user on [dev](https://console.cloud.google.com/sql/instances/p4-develop-k8s/users?project=planet-4-151612) and [prod](https://console.cloud.google.com/sql/instances/planet4-prod/users?project=planet4-production) and put your credentials in `/secrets/common`. 
+- Create an admin user on [dev](https://console.cloud.google.com/sql/instances/p4-develop-k8s/users?project=planet-4-151612) and [prod](https://console.cloud.google.com/sql/instances/planet4-prod/users?project=planet4-production) and put your credentials in `/secrets/common`.
 - Be sure that the circleci and github token also work.
 - Run `gcloud auth list --format=json | jq -r '.[] | select(.account|test("^.+?@greenpeace.org")) | .account'` and check if the first account you see has iam access to the project.
 
