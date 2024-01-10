@@ -21,6 +21,6 @@ echo
   esac
 }
 
-gsutil ls "gs://${BUCKET}" || exit 0
+gcloud storage ls "gs://${BUCKET}" || exit 0
 
-gsutil -m rm -r "gs://${BUCKET}"
+gcloud storage rm -r "gs://${BUCKET}"

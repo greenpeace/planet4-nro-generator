@@ -33,5 +33,5 @@ then
   create_stateless_bucket.sh
   BUCKET=${CONTAINER_PREFIX}-stateless \
   create_backup_buckets.sh
-  # gsutil logging set on -b gs://p4-gcs-usage "gs://${CONTAINER_PREFIX}-stateless"
+  # gcloud storage logging set on gs://p4-gcs-usage "gs://${CONTAINER_PREFIX}-stateless"
 fi
