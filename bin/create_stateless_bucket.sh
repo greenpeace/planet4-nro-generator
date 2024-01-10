@@ -30,7 +30,7 @@ function init_bucket() {
     --update-labels=environment="${ENVIRONMENT}",nro="${APP_HOSTPATH}"
 
   # Sync the default content to the new bucket
-  gcloud storage rsync "gs:/${SOURCE_CONTENT_BUCKET}/uploads/" "gs://${BUCKET}" --recursive --delete-unmatched-destination-objects
+  gcloud storage rsync "gs://${SOURCE_CONTENT_BUCKET}/uploads/" "gs://${BUCKET}" --recursive --delete-unmatched-destination-objects
 
   okay=1
   set -e
