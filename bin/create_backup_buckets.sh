@@ -67,7 +67,7 @@ create_db_backup_bucket() {
 }
 
 # Set the normal images bucket to have versioning so that deleted images get retained
-gcloud storage buckets update "gs://${_BUCKET}" --versioning
+gcloud storage buckets update "gs://${BUCKET}" --versioning
 
 # Retrying here because gcloud storage is flaky, connection resets often
 echo "Create GCS buckets to store backup data ..."
