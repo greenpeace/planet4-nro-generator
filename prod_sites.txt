@@ -24,7 +24,6 @@ indonesia
 international
 israel
 italy
-japan
 korea
 luxembourg
 malaysia
@@ -48,3 +47,4 @@ thailand
 turkey
 ukraine
 ummah
+usa
