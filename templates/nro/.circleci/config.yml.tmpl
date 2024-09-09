@@ -198,6 +198,21 @@ job_definitions:
       - run: make copy
       - run: make persist
       - run: BUILD_TAG="${CIRCLE_TAG}" make deploy
+
+  rollback_db_steps: &rollback_db_steps
+    working_directory: /tmp/workspace/src
+    steps:
+      - checkout
+      - run:
+          name: Configure
+          command: activate-gcloud-account.sh
+      - run:
+          name: Get keys
+          command: echo $SQLPROXY_KEY | base64 -d > key.json
+      - run:
+          name: Restore database
+          command: restore_db.sh
+          no_output_timeout: 20m
 {{- end }}
 
 jobs:
@@ -374,6 +389,13 @@ jobs:
       <<: *common_environment
       <<: *production_environment
     <<: *rollback_steps
+
+  rollback-production-db:
+    <<: *defaults
+    environment:
+      <<: *common_environment
+      <<: *production_environment
+    <<: *rollback_db_steps
 
   create-sync-sql:
     <<: *defaults
@@ -567,10 +589,19 @@ workflows:
           type: approval
           requires:
             - rollback-staging
+      - hold-production-db:
+          <<: *on_release_tag
+          type: approval
+          requires:
+            - rollback-staging
       - rollback-production:
           <<: *on_release_tag
           requires:
             - hold-production
+      - rollback-production-db:
+          <<: *on_release_tag
+          requires:
+            - hold-production-db
 
   sync-from-production:
     triggers:
