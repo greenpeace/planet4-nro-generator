@@ -12,18 +12,20 @@ command -v gcloud > /dev/null || {
 
 pw_length=32
 
-read_properties()
-{
+read_properties() {
   file="$1"
-  while IFS="=" read -r key value; do
-    case "$key" in
-      '') : ;;
-      '#'*) : ;;
-      *) eval "$key=\"$value\""
-    esac
+  while IFS='=' read -r key value; do
+    # Strip leading/trailing whitespace
+    key=$(echo "$key" | xargs)
+    value=$(echo "$value" | xargs)
+    
+    # Skip blank lines or comments
+    [[ -z "$key" || "$key" == \#* ]] && continue
+    
+    # Export the key-value pair using eval
+    eval "$key=\"\$value\""
   done < "$file"
 }
-
 if [[ ! -f "secrets/common" ]]
 then
   echo "Creating file: secrets/common ..."
