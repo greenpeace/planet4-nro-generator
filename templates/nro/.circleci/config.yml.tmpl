@@ -491,19 +491,6 @@ jobs:
       - run: pwd
       - run: ls
       - run: ./go.sh
-
-  elasticpress:
-    <<: *defaults
-    environment:
-      <<: *common_environment
-      <<: *production_environment
-    steps:
-      - run:
-          name: Configure
-          command: activate-gcloud-account.sh
-      - run:
-          name: Sync ElasticPress
-          command: elasticpress-sync.sh
 {{- end }}
 
 workflow_definitions:
@@ -658,17 +645,5 @@ workflows:
                 - main
     jobs:
       - backup:
-          context: org-global
-
-  elasticpress:
-    triggers:
-      - schedule:
-          cron: "30 04 * * *"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - elasticpress:
           context: org-global
 {{- end }}
