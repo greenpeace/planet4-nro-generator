@@ -1,5 +1,13 @@
 SHELL := /bin/bash
 
+# Detect if SELinux is enforcing
+SELINUX_ENABLED := $(shell getenforce 2>/dev/null)
+ifeq ($(SELINUX_ENABLED),Enforcing)
+	V_SUFFIX := :Z
+else
+	V_SUFFIX :=
+endif
+
 # Use default SSH key if not set
 GITHUB_SSH_KEY ?= $(HOME)/.ssh/id_rsa
 
@@ -91,9 +99,9 @@ endif
 		--name p4-nro-generator \
 		-e "NRO=$(NRO)" \
 		-e "SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)" \
-		-v "$(GITHUB_SSH_KEY):/tmp/.ssh/id_rsa" \
-		-v "$(PWD)/secrets:/app/secrets" \
-		-v "${HOME}/.config/gcloud/:/root/.config/gcloud/" \
+		-v "$(GITHUB_SSH_KEY):/tmp/.ssh/id_rsa$(V_SUFFIX)" \
+		-v "$(PWD)/secrets:/app/secrets$(V_SUFFIX)" \
+		-v "${HOME}/.config/gcloud/:/root/.config/gcloud/$(V_SUFFIX)" \
 		p4-build make -f Makefile-run $(RUN_ARGS)
 	SERVICE_ACCOUNT_NAME=$(SERVICE_ACCOUNT_NAME)
 
